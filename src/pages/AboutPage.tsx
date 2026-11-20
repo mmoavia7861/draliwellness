@@ -6,9 +6,14 @@ import { PageMeta } from '../components/PageMeta';
 
 export const AboutPage: React.FC = () => {
   const { siteSettings } = useStore();
-  const founderPhotoUrl =
+  const configuredFounderPhoto =
     siteSettings.founderPhotoUrl?.trim() ||
     `${import.meta.env.BASE_URL}assets/aistudio/founder-dr-muhammad-ali-hassan.webp`;
+  // Bust caches only for the locally hosted portrait replaced with the HD original.
+  // A founder portrait uploaded through CMS keeps its unique Firebase Storage URL.
+  const founderPhotoUrl = configuredFounderPhoto.includes('/assets/aistudio/founder-dr-muhammad-ali-hassan.webp')
+    ? `${configuredFounderPhoto.split('?')[0]}?v=founder-hd-20261120`
+    : configuredFounderPhoto;
   const linkedInUrl =
     siteSettings.socialLinks?.linkedin?.trim() ||
     'https://www.linkedin.com/in/dr-muhammad-ali-hassan-5174b7287/';
