@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Calendar, Clock } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 import { PageMeta } from '../components/PageMeta';
@@ -6,7 +7,7 @@ import type { Service } from '../types';
 import { formatPkr } from '../utils/commerce';
 
 export const ServicesPage: React.FC = () => {
-  const { services, user, signInWithGoogle, requestAppointment, siteSettings } = useStore();
+  const { services, user, requestAppointment, siteSettings } = useStore();
   const visibleServices = services.filter((s) => s.visible);
 
   const [selectedService, setSelectedService] = useState<Service | null>(null);
@@ -129,15 +130,14 @@ export const ServicesPage: React.FC = () => {
             {!user ? (
               <div className="space-y-3 text-sm">
                 <p className="text-[#252B29]/80">
-                  Please sign in with Google to submit a verified consultation request.
+                  Please sign in with an email and password to submit a verified consultation request.
                 </p>
-                <button
-                  type="button"
-                  onClick={() => void signInWithGoogle()}
-                  className="h-10 px-5 rounded-lg bg-[#174D40] text-white text-sm font-medium cursor-pointer"
+                <Link
+                  to="/account"
+                  className="inline-flex items-center h-10 px-5 rounded-lg bg-[#174D40] text-white text-sm font-medium"
                 >
-                  Sign In with Google
-                </button>
+                  Sign In with Email
+                </Link>
               </div>
             ) : (
               <form onSubmit={handleBook} className="space-y-4">
