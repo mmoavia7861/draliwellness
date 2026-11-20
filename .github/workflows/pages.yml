@@ -53,18 +53,19 @@ jobs:
           echo "Verifying hosted page at $SITE_URL"
           sleep 8
           curl --fail --silent --show-error --location --retry 4 --retry-delay 3 "${SITE_URL}?v=${GITHUB_SHA}" -o /tmp/site.html
-          JS_ASSET="$(grep -oE '/draliwellness/assets/[^"]+js' /tmp/site.html | head -n 1 || true)"
+          JS_ASSET="$(grep -oE '/assets/[^"]+\.js' /tmp/site.html | head -n 1 || true)"
           if [[ -z "$JS_ASSET" ]]; then
             echo "::error::The served HTML does not reference the built project JavaScript."
             tail -c 700 /tmp/site.html
             exit 1
           fi
           echo "JavaScript entry: $JS_ASSET"
-          curl --fail --silent --show-error --location --head "https://mmoavia7861.github.io${JS_ASSET}" > /tmp/asset-head.txt
+          SITE_ORIGIN="${SITE_URL%/}"
+          curl --fail --silent --show-error --location --head --retry 4 --retry-delay 3 "${SITE_ORIGIN}${JS_ASSET}" > /tmp/asset-head.txt
           echo "Main JavaScript asset returns HTTP 200."
           BROWSER="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
           if [[ -n "$BROWSER" ]]; then
-            timeout 45 "$BROWSER" --headless --no-sandbox --disable-dev-shm-usage --disable-gpu --no-first-run --virtual-time-budget=12000 --dump-dom "${SITE_URL}?v=${GITHUB_SHA}" > /tmp/rendered.html 2> /tmp/browser-errors.log || true
+            timeout 45 "$BROWSER" --headless --no-sandbox --disable-dev-shm-usage --disable-gpu --no-first-run --virtual-time-budget=12000 --dump-dom "${SITE_ORIGIN}/?v=${GITHUB_SHA}" > /tmp/rendered.html 2> /tmp/browser-errors.log || true
             if grep -q 'Shop Now' /tmp/rendered.html; then
               echo "React storefront rendered successfully in headless Chrome."
             else
@@ -73,7 +74,7 @@ jobs:
               head -c 1000 /tmp/rendered.html || true
               exit 1
             fi
-            timeout 45 "$BROWSER" --headless --no-sandbox --disable-dev-shm-usage --disable-gpu --no-first-run --virtual-time-budget=12000 --dump-dom "${SITE_URL}admin?v=${GITHUB_SHA}" > /tmp/admin-rendered.html 2> /tmp/admin-browser-errors.log || true
+            timeout 45 "$BROWSER" --headless --no-sandbox --disable-dev-shm-usage --disable-gpu --no-first-run --virtual-time-budget=12000 --dump-dom "${SITE_ORIGIN}/admin?v=${GITHUB_SHA}" > /tmp/admin-rendered.html 2> /tmp/admin-browser-errors.log || true
             if grep -q 'Admin Control Panel' /tmp/admin-rendered.html && grep -q 'Login to Admin Panel' /tmp/admin-rendered.html && grep -q 'Admin Gmail / Email' /tmp/admin-rendered.html && ! grep -q 'Sign In with Google' /tmp/admin-rendered.html; then
               echo "Admin email/password form rendered successfully; Google button absent."
             else
