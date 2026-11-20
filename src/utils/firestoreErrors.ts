@@ -1,4 +1,4 @@
-import { auth } from '../firebase';
+import firebaseConfig from '../../firebase-applet-config.json';
 
 export enum OperationType {
   CREATE = 'create',
@@ -9,45 +9,35 @@ export enum OperationType {
   WRITE = 'write',
 }
 
-export interface FirestoreErrorInfo {
-  error: string;
-  operationType: OperationType;
-  path: string | null;
-  authInfo: {
-    userId?: string | null;
-    email?: string | null;
-    emailVerified?: boolean | null;
-    isAnonymous?: boolean | null;
-    tenantId?: string | null;
-    providerInfo?: {
-      providerId?: string | null;
-      email?: string | null;
-    }[];
-  };
-}
-
 export function handleFirestoreError(
   error: unknown,
   operationType: OperationType,
   path: string | null
 ): never {
-  const errInfo: FirestoreErrorInfo = {
-    error: error instanceof Error ? error.message : String(error),
-    authInfo: {
-      userId: auth.currentUser?.uid,
-      email: auth.currentUser?.email,
-      emailVerified: auth.currentUser?.emailVerified,
-      isAnonymous: auth.currentUser?.isAnonymous,
-      tenantId: auth.currentUser?.tenantId,
-      providerInfo:
-        auth.currentUser?.providerData?.map((provider) => ({
-          providerId: provider.providerId,
-          email: provider.email,
-        })) || [],
-    },
+  const code =
+    typeof error === 'object' && error !== null && 'code' in error
+      ? String((error as { code?: unknown }).code || '')
+      : '';
+  const detail = error instanceof Error ? error.message : String(error);
+  const location = path || 'the selected collection';
+
+  // Log useful diagnostics without putting the owner's UID, email or
+  // authentication token in the user-facing error message.
+  console.error('Firestore request failed:', {
     operationType,
-    path,
-  };
-  console.error('Firestore Error:', JSON.stringify(errInfo));
-  throw new Error(JSON.stringify(errInfo));
+    path: location,
+    code,
+    message: detail,
+  });
+
+  if (code === 'permission-denied' || /Missing or insufficient permissions/i.test(detail)) {
+    throw new Error(
+      `Firestore permission denied while trying to ${operationType} ${location}. ` +
+      'Confirm that the current firestore.rules are published to the exact named ' +
+      `Firestore database configured for the website (${firebaseConfig.firestoreDatabaseId}), ` +
+      'then sign out/in and retry. Do not enable public writes.'
+    );
+  }
+
+  throw new Error(`Firestore ${operationType} failed at ${location}: ${detail}`);
 }

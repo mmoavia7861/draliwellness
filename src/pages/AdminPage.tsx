@@ -486,8 +486,10 @@ export const AdminPage: React.FC = () => {
               onClick={async () => {
                 setLoadError('');
                 try {
-                  await seedLaunchCatalog();
-                  notify('Missing defaults initialized. Existing prices, stock and content were preserved.');
+                  const count = await seedLaunchCatalog();
+                  notify(count > 0
+                    ? `Initialized ${count} missing default document(s). Existing content was preserved.`
+                    : 'All default documents are present. No existing data was changed.');
                 } catch (err) {
                   setLoadError(err instanceof Error ? err.message : 'Catalog initialization failed.');
                 }

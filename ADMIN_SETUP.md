@@ -52,3 +52,33 @@ This project uses a React/Vite frontend deployed on GitHub Pages and Firebase fo
 - Use verified email, least-privilege roles, rate limiting / abuse protection and preferably multi-factor authentication for admin accounts.
 - Firebase-hosted identity checks and Firestore rules protect admin access; hiding the Admin link does not provide security.
 - Password/account migration is not done by a GitHub deploy. It must be completed in Firebase Authentication by the account owner.
+
+
+## Troubleshooting: "Missing or insufficient permissions" on /admin
+
+The storefront uses a **named Firestore database**, configured in
+`firebase-applet-config.json` as `firestoreDatabaseId`. Rules published to
+`(default)` will not authorize requests to this named database.
+
+The admin "Check Missing Defaults" action is manual and idempotent. It:
+- Refreshes the owner's Firebase ID token after email verification.
+- Checks one document at a time and inserts only missing launch defaults.
+- Reports the exact failed document path if a read or create is denied.
+- Never changes existing order data, product prices, inventory, banners, or CMS.
+
+To fix denied writes:
+1. Open the Firebase Console for project `watchful-adapter-wbcxw`.
+2. Navigate to **Firestore Database** and select the database whose ID is
+   **`ai-studio-e97294bf-5393-4976-a852-dec4adb1854d`**.
+3. In that database, open **Rules**, compare with this repository's
+   `firestore.rules`, and **Publish** the restrictive rules to that database.
+4. Use **Rules Playground** to simulate an authenticated, email-verified owner
+   `create` request for `/products/brainaxis-energy-boost` with valid data.
+5. On the website, log out and sign back in. Open `/admin` and click
+   **Check Missing Defaults**. Review any specific document path reported.
+6. Verify that Products and Categories in Firestore have the expected counts.
+   The UI may temporarily show built-in launch data while Firestore is empty.
+
+Never fix this by applying `allow read, write: if true` or relaxing admin
+authorization. GitHub Pages deployment does not automatically publish Firebase
+Security Rules.

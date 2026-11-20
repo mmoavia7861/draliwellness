@@ -152,7 +152,7 @@ interface StoreContextValue {
   }) => Promise<void>;
 
   // Admin Operations
-  seedLaunchCatalog: () => Promise<void>;
+  seedLaunchCatalog: () => Promise<number>;
   saveProduct: (product: Product, isNew?: boolean) => Promise<void>;
   deleteProduct: (productId: string) => Promise<void>;
   saveCategory: (category: Category, isNew?: boolean) => Promise<void>;
@@ -497,56 +497,66 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Add missing launch records only. Never overwrite live prices, stock, orders
   // or administrator-authored CMS settings when initializing the store.
   const seedLaunchCatalog = useCallback(async () => {
-    if (!isAdmin) throw new Error('Administrator permissions are required to initialize the catalog.');
-    try {
-      const batch = writeBatch(db);
-      const candidateDocs = [
-        ...LAUNCH_CATEGORIES.map((category) => ({
-          ref: doc(db, 'categories', category.id),
-          data: { ...category, createdAt: serverTimestamp(), updatedAt: serverTimestamp() },
-        })),
-        ...LAUNCH_PRODUCTS.map((product) => ({
-          ref: doc(db, 'products', product.id),
-          data: { ...product, createdAt: serverTimestamp(), updatedAt: serverTimestamp() },
-        })),
-        {
-          ref: doc(db, 'siteSettings', 'main'),
-          data: { ...LAUNCH_SITE_SETTINGS, updatedAt: serverTimestamp() },
-        },
-        ...LAUNCH_SERVICES.map((service) => ({
-          ref: doc(db, 'services', service.id),
-          data: { ...service, createdAt: serverTimestamp(), updatedAt: serverTimestamp() },
-        })),
-      ];
-      const current = await Promise.all(candidateDocs.map((candidate) => getDoc(candidate.ref)));
-      let inserted = 0;
-      for (let idx = 0; idx < candidateDocs.length; idx += 1) {
-        if (!current[idx].exists()) {
-          batch.set(candidateDocs[idx].ref, candidateDocs[idx].data);
-          inserted += 1;
-        }
-      }
-      if (inserted > 0) await batch.commit();
-      setFirestoreSeeded(true);
-    } catch (error) {
-      handleFirestoreError(error, OperationType.WRITE, 'products/seed');
+    if (!isAdmin || !auth.currentUser) {
+      throw new Error('Administrator permissions are required to initialize the catalog.');
     }
+
+    // Refresh the Firebase ID token after email verification. Firestore checks
+    // request.auth.token.email_verified, not just the client UI state.
+    await auth.currentUser.reload();
+    if (!auth.currentUser.emailVerified) {
+      throw new Error('Verify the administrator email, then sign out and sign in again.');
+    }
+    await auth.currentUser.getIdToken(true);
+
+    // Only insert missing documents; do not overwrite prices, stock, orders,
+    // banners or other content already edited through the dashboard.
+    const candidateDocs = [
+      ...LAUNCH_CATEGORIES.map((category) => ({
+        ref: doc(db, 'categories', category.id),
+        data: { ...category, createdAt: serverTimestamp(), updatedAt: serverTimestamp() },
+      })),
+      ...LAUNCH_PRODUCTS.map((product) => ({
+        ref: doc(db, 'products', product.id),
+        data: { ...product, createdAt: serverTimestamp(), updatedAt: serverTimestamp() },
+      })),
+      {
+        ref: doc(db, 'siteSettings', 'main'),
+        data: { ...LAUNCH_SITE_SETTINGS, updatedAt: serverTimestamp() },
+      },
+      ...LAUNCH_SERVICES.map((service) => ({
+        ref: doc(db, 'services', service.id),
+        data: { ...service, createdAt: serverTimestamp(), updatedAt: serverTimestamp() },
+      })),
+    ];
+
+    // Each operation reports its actual document path instead of labelling all
+    // read/write failures as "products/seed".
+    let inserted = 0;
+    for (const candidate of candidateDocs) {
+      let exists = false;
+      try {
+        exists = (await getDoc(candidate.ref)).exists();
+      } catch (error) {
+        handleFirestoreError(error, OperationType.GET, candidate.ref.path);
+      }
+      if (exists) continue;
+
+      try {
+        await setDoc(candidate.ref, candidate.data);
+        inserted += 1;
+      } catch (error) {
+        handleFirestoreError(error, OperationType.CREATE, candidate.ref.path);
+      }
+    }
+    setFirestoreSeeded(true);
+    return inserted;
   }, [isAdmin]);
 
-  // Auto-seed Firestore on first Admin login if empty
-  useEffect(() => {
-    if (isAdmin && adminChecked && !firestoreSeeded) {
-      getDocs(collection(db, 'products'))
-        .then((snap) => {
-          if (snap.empty) {
-            void seedLaunchCatalog();
-          }
-        })
-        .catch(() => {
-          // ignore read check
-        });
-    }
-  }, [isAdmin, adminChecked, firestoreSeeded, seedLaunchCatalog]);
+  // Default initialization is deliberately manual. Auto-seeding on login can
+  // trigger denied writes before verified tokens/rules are ready, and a failed
+  // batch previously hid which collection needed attention. Admins can use
+  // "Check Missing Defaults" to resume safely without overwriting live data.
 
   const signInWithEmail = useCallback(async (email: string, password: string) => {
     await signInWithEmailAndPassword(auth, email.trim().toLowerCase(), password);
