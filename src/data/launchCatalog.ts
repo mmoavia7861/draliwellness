@@ -51,7 +51,7 @@ export const LAUNCH_PRODUCTS: Product[] = [
     packSize: '30 Tablets',
     strength: 'Complete Daily Formula',
     usageSummary: 'Once daily · 30 Tablets',
-    pricePkr: 1350,
+    pricePkr: 1295,
     compareAtPricePkr: 0,
     stock: 100,
     sku: 'BA-EB-30T',
@@ -104,7 +104,7 @@ export const LAUNCH_PRODUCTS: Product[] = [
         id: 'eb-30-tablets',
         label: '30 Tablets (1 Month Supply)',
         sku: 'BA-EB-30T',
-        pricePkr: 1350,
+        pricePkr: 1295,
         stock: 100,
       },
     ],
@@ -239,7 +239,7 @@ export const LAUNCH_SITE_SETTINGS: SiteSettings = {
     'Dr. Muhammad Ali Hassan is a Pakistan-based medical researcher and the founder of Dr. Ali Hassan Health & Wellness and BrainAxis. His public LinkedIn profile lists studies at Shifa Tameer-e-Millat University (2019–2024), engagement with the Pakistan Academy of Neurological Surgery (PANS), published research and the Dr. Syed Qamar Alam Research Gold Medal (March 2025). The BrainAxis line focuses on transparent supplement information and responsible customer guidance.',
   founderMission:
     'To provide trustworthy, honestly labeled everyday wellness formulations backed by transparent product information and responsible guidance.',
-  whatsappNumber: '923000000000',
+  whatsappNumber: '923480260060',
   whatsappGreeting:
     'Hello Dr. Ali Hassan Health & Wellness team, I have a question about BrainAxis supplements.',
   supportEmail: 'support@dralihassanwellness.pk',
@@ -288,7 +288,7 @@ export const LAUNCH_SITE_SETTINGS: SiteSettings = {
       'Dietary supplements should not substitute for a varied diet or professional medical care. Always read product labels, directions, and caution statements before use.',
   },
   socialLinks: {
-    instagram: '',
+    instagram: 'https://www.instagram.com/dr.ali.neurosurgeon/',
     facebook: '',
     youtube: '',
     linkedin: 'https://www.linkedin.com/in/dr-muhammad-ali-hassan-5174b7287/',
