@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { auth, storage } from '../../firebase';
 import { ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-react';
 import type { SitePolicies, SiteSettings } from '../../types';
 
@@ -22,11 +24,55 @@ export const AdminCmsPanel: React.FC<AdminCmsPanelProps> = ({
   onSave,
 }) => {
   const [saving, setSaving] = useState(false);
+  const [uploadingFounderPhoto, setUploadingFounderPhoto] = useState(false);
   const [error, setError] = useState('');
 
   const banners = cmsDraft.banners ?? [];
   const faqs = cmsDraft.faqs ?? [];
   const policies = cmsDraft.policies ?? DEFAULT_POLICIES;
+
+  const handleFounderPhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    setError('');
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      setError('Founder photo must be a JPG, PNG or WebP image.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Founder photo must be smaller than 5 MB.');
+      return;
+    }
+    const admin = auth.currentUser;
+    if (!admin || !admin.emailVerified) {
+      setError('Sign in with a verified admin email before uploading the founder photo.');
+      return;
+    }
+    setUploadingFounderPhoto(true);
+    try {
+      // Reuse the verified admin-only image storage path already enabled for product photos.
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-').slice(-90);
+      const imagePath = `product-images/${admin.uid}/founder-${Date.now()}-${safeName}`;
+      const uploaded = await uploadBytes(ref(storage, imagePath), file, {
+        contentType: file.type,
+        cacheControl: 'public,max-age=86400',
+      });
+      const url = await getDownloadURL(uploaded.ref);
+      setCmsDraft((previous) => ({ ...previous, founderPhotoUrl: url }));
+    } catch (err) {
+      const code = (err as { code?: string } | null)?.code || '';
+      setError(
+        code.includes('unauthorized')
+          ? 'Image upload denied. Verify Firebase Storage rules and the authorized admin email.'
+          : code.includes('bucket-not-found')
+            ? 'Firebase Storage is not configured. Enable Storage before uploading.'
+            : err instanceof Error ? err.message : 'Could not upload founder photo.'
+      );
+    } finally {
+      setUploadingFounderPhoto(false);
+    }
+  };
 
   const updatePolicy = (key: keyof SitePolicies, value: string) => {
     setCmsDraft({
@@ -51,6 +97,10 @@ export const AdminCmsPanel: React.FC<AdminCmsPanelProps> = ({
     <form
       onSubmit={async (e) => {
         e.preventDefault();
+        if (uploadingFounderPhoto) {
+          setError('Finish uploading the founder photo before saving CMS changes.');
+          return;
+        }
         setSaving(true);
         setError('');
         try {
@@ -74,7 +124,7 @@ export const AdminCmsPanel: React.FC<AdminCmsPanelProps> = ({
         </div>
         <button
           type="submit"
-          disabled={saving}
+          disabled={saving || uploadingFounderPhoto}
           className="h-10 px-6 rounded-lg bg-[#174D40] text-white text-xs font-semibold hover:bg-[#113A30] disabled:opacity-60 cursor-pointer"
         >
           {saving ? 'Saving...' : 'Save All CMS Changes'}
@@ -383,6 +433,33 @@ export const AdminCmsPanel: React.FC<AdminCmsPanelProps> = ({
               onChange={(e) => setCmsDraft({ ...cmsDraft, founderPhotoUrl: e.target.value })}
               className="w-full h-10 px-3 rounded-lg border border-[#174D40]/20 bg-[#FAF8F2]"
             />
+          </div>
+          <div className="sm:col-span-3 flex flex-col sm:flex-row items-start gap-5 rounded-xl border border-[#174D40]/15 bg-[#FAF8F2] p-4">
+            {cmsDraft.founderPhotoUrl && (
+              <img
+                src={cmsDraft.founderPhotoUrl}
+                alt="Founder photo preview"
+                className="w-28 h-28 object-cover object-top rounded-lg border border-[#174D40]/15"
+              />
+            )}
+            <div className="flex-1 space-y-2">
+              <label htmlFor="founder-photo-upload" className="block text-xs font-semibold">
+                Upload HD founder portrait (JPG, PNG or WebP, max 5 MB)
+              </label>
+              <input
+                id="founder-photo-upload"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleFounderPhotoUpload}
+                disabled={uploadingFounderPhoto || saving}
+                className="block w-full text-xs file:mr-3 file:rounded-md file:border-0 file:bg-[#174D40] file:px-4 file:py-2 file:font-semibold file:text-white"
+              />
+              <p className="text-xs text-[#252B29]/70">
+                {uploadingFounderPhoto
+                  ? 'Uploading founder portrait...'
+                  : 'After the upload completes, click Save All CMS Changes to publish the new portrait.'}
+              </p>
+            </div>
           </div>
           <div className="sm:col-span-3 space-y-1">
             <label className="text-xs font-semibold">Founder Biography</label>
