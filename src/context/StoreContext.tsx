@@ -1,7 +1,10 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import {
+  createUserWithEmailAndPassword,
   onAuthStateChanged,
-  signInWithPopup,
+  sendEmailVerification,
+  sendPasswordResetEmail,
+  signInWithEmailAndPassword,
   signOut,
   type User,
 } from 'firebase/auth';
@@ -20,7 +23,7 @@ import {
   where,
   writeBatch,
 } from 'firebase/firestore';
-import { auth, db, googleProvider } from '../firebase';
+import { auth, db } from '../firebase';
 import {
   LAUNCH_CATEGORIES,
   LAUNCH_PRODUCTS,
@@ -69,7 +72,10 @@ interface StoreContextValue {
   authReady: boolean;
   isAdmin: boolean;
   adminChecked: boolean;
-  signInWithGoogle: () => Promise<void>;
+  signInWithEmail: (email: string, password: string) => Promise<void>;
+  registerWithEmail: (email: string, password: string) => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
+  resendVerificationEmail: () => Promise<void>;
   logout: () => Promise<void>;
 
   products: Product[];
@@ -259,15 +265,21 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           }
         }
         if (isBootstrapped) {
-          const adminRef = doc(db, 'admins', nextUser.uid);
-          const existingAdmin = await getDoc(adminRef);
-          if (!existingAdmin.exists()) {
-            await setDoc(adminRef, {
-              uid: nextUser.uid,
-              email: (nextUser.email ?? BOOTSTRAP_ADMIN_EMAIL).slice(0, 160),
-              role: 'super_admin',
-              createdAt: serverTimestamp(),
-            });
+          // Verified owner authorization is independent of this best-effort
+          // registry write. Database rules still enforce privileges.
+          try {
+            const adminRef = doc(db, 'admins', nextUser.uid);
+            const existingAdmin = await getDoc(adminRef);
+            if (!existingAdmin.exists()) {
+              await setDoc(adminRef, {
+                uid: nextUser.uid,
+                email: (nextUser.email ?? BOOTSTRAP_ADMIN_EMAIL).slice(0, 160),
+                role: 'super_admin',
+                createdAt: serverTimestamp(),
+              });
+            }
+          } catch (registryError) {
+            console.warn('Admin registry unavailable. Check Firestore rules.', registryError);
           }
         }
         // Ignore stale admin verification if the user changed during an async check.
@@ -500,8 +512,25 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, [isAdmin, adminChecked, firestoreSeeded, seedLaunchCatalog]);
 
-  const signInWithGoogle = useCallback(async () => {
-    await signInWithPopup(auth, googleProvider);
+  const signInWithEmail = useCallback(async (email: string, password: string) => {
+    await signInWithEmailAndPassword(auth, email.trim().toLowerCase(), password);
+  }, []);
+
+  // Customer registration only; /admin never registers users and checks Firestore
+  // authorization independently. Passwords are handled exclusively by Firebase Auth.
+  const registerWithEmail = useCallback(async (email: string, password: string) => {
+    const credential = await createUserWithEmailAndPassword(auth, email.trim().toLowerCase(), password);
+    await sendEmailVerification(credential.user);
+  }, []);
+
+  const resetPassword = useCallback(async (email: string) => {
+    await sendPasswordResetEmail(auth, email.trim().toLowerCase());
+  }, []);
+
+  const resendVerificationEmail = useCallback(async () => {
+    if (!auth.currentUser) throw new Error('Sign in before requesting a verification email.');
+    if (auth.currentUser.emailVerified) return;
+    await sendEmailVerification(auth.currentUser);
   }, []);
 
   const logout = useCallback(async () => {
@@ -1457,7 +1486,10 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     authReady,
     isAdmin,
     adminChecked,
-    signInWithGoogle,
+    signInWithEmail,
+    registerWithEmail,
+    resetPassword,
+    resendVerificationEmail,
     logout,
     products,
     liveProducts,
