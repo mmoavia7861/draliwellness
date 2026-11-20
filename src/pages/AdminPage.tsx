@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 import { PageMeta } from '../components/PageMeta';
+import { getEmailAuthError } from '../utils/authErrors';
 import { AdminProductEditor } from '../components/admin/AdminProductEditor';
 import { AdminCmsPanel } from '../components/admin/AdminCmsPanel';
 import { AdminAudiencePanel } from '../components/admin/AdminAudiencePanel';
@@ -53,7 +54,9 @@ export const AdminPage: React.FC = () => {
     authReady,
     isAdmin,
     adminChecked,
-    signInWithGoogle,
+    signInWithEmail,
+    resetPassword,
+    resendVerificationEmail,
     logout,
     products,
     categories,
@@ -112,6 +115,10 @@ export const AdminPage: React.FC = () => {
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [statusBanner, setStatusBanner] = useState('');
   const [loginError, setLoginError] = useState('');
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginBusy, setLoginBusy] = useState(false);
+  const [authMessage, setAuthMessage] = useState('');
   const [loadError, setLoadError] = useState('');
   const [loadingAdmin, setLoadingAdmin] = useState(false);
   const [savingPriceId, setSavingPriceId] = useState<string | null>(null);
@@ -223,22 +230,50 @@ export const AdminPage: React.FC = () => {
     }
   };
 
-  const handleAdminLogin = async () => {
+  const handleAdminLogin = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setLoginError('');
+    setAuthMessage('');
+    setLoginBusy(true);
     try {
-      await signInWithGoogle();
+      await signInWithEmail(loginEmail, loginPassword);
+      setLoginPassword('');
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Google sign-in failed.';
-      const code = (err as { code?: string } | null)?.code || '';
-      setLoginError(
-        code.includes('unauthorized-domain')
-          ? 'This website domain is not authorized in Firebase Authentication. Add mmoavia7861.github.io under Firebase Console → Authentication → Settings → Authorized domains.'
-          : code.includes('popup-blocked')
-            ? 'The browser blocked the Google sign-in popup. Allow popups for this site and try again.'
-            : code.includes('popup-closed-by-user')
-              ? 'Google sign-in was cancelled. Select your authorized account and try again.'
-              : `Google sign-in failed: ${message}`
-      );
+      setLoginError(getEmailAuthError(err));
+    } finally {
+      setLoginBusy(false);
+    }
+  };
+
+  const handleResetAdminPassword = async () => {
+    setLoginError('');
+    setAuthMessage('');
+    if (!loginEmail.trim()) {
+      setLoginError('Enter your admin email address first to request a password reset.');
+      return;
+    }
+    setLoginBusy(true);
+    try {
+      await resetPassword(loginEmail);
+      setAuthMessage('If this email is registered, password reset instructions have been sent.');
+    } catch (err) {
+      setLoginError(getEmailAuthError(err));
+    } finally {
+      setLoginBusy(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    setLoginError('');
+    setAuthMessage('');
+    setLoginBusy(true);
+    try {
+      await resendVerificationEmail();
+      setAuthMessage('Verification email requested. Open the link in your inbox, then sign out and sign in again.');
+    } catch (err) {
+      setLoginError(getEmailAuthError(err));
+    } finally {
+      setLoginBusy(false);
     }
   };
 
@@ -282,8 +317,8 @@ export const AdminPage: React.FC = () => {
               </h1>
               <p className="text-sm text-[#252B29]/75">
                 {user
-                  ? `Signed in as ${user.email}, which does not have administrator privileges.`
-                  : 'Sign in with an authorized administrator Google account to manage products, banners, orders, appointments, and storefront settings.'}
+                  ? `Signed in as ${user.email}, but administrator access is not active. Confirm email verification and your assigned admin role.`
+                  : 'Sign in using your authorized email address and the password for your Firebase website account to manage products, orders, banners and settings.'}
               </p>
             </div>
             {loginError && (
@@ -291,14 +326,66 @@ export const AdminPage: React.FC = () => {
                 {loginError}
               </p>
             )}
+            {authMessage && (
+              <p role="status" className="text-sm text-[#174D40] bg-[#E8F1EB] border border-[#174D40]/20 rounded-lg p-3">
+                {authMessage}
+              </p>
+            )}
             <div className="space-y-2.5 pt-1">
               {!user && (
+                <form onSubmit={(e) => void handleAdminLogin(e)} className="space-y-3 text-left">
+                  <div className="space-y-1">
+                    <label htmlFor="admin-email" className="text-xs font-semibold text-[#174D40]">Admin Gmail / Email</label>
+                    <input
+                      id="admin-email"
+                      type="email"
+                      autoComplete="username"
+                      inputMode="email"
+                      required
+                      value={loginEmail}
+                      onChange={(e) => setLoginEmail(e.target.value)}
+                      placeholder="you@gmail.com"
+                      className="w-full h-11 px-3 rounded-lg border border-[#174D40]/25 bg-white text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label htmlFor="admin-password" className="text-xs font-semibold text-[#174D40]">Password</label>
+                    <input
+                      id="admin-password"
+                      type="password"
+                      autoComplete="current-password"
+                      required
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                      placeholder="Enter your website password"
+                      className="w-full h-11 px-3 rounded-lg border border-[#174D40]/25 bg-white text-sm"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={loginBusy}
+                    className="w-full h-11 rounded-lg bg-[#174D40] text-white text-sm font-semibold hover:bg-[#113A30] disabled:opacity-60"
+                  >
+                    {loginBusy ? 'Signing in...' : 'Login to Admin Panel'}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={loginBusy}
+                    onClick={() => void handleResetAdminPassword()}
+                    className="w-full text-center text-sm text-[#174D40] underline disabled:opacity-60"
+                  >
+                    Forgot password?
+                  </button>
+                </form>
+              )}
+              {user && !user.emailVerified && (
                 <button
                   type="button"
-                  onClick={() => void handleAdminLogin()}
-                  className="w-full h-11 rounded-lg bg-[#174D40] text-white text-sm font-semibold hover:bg-[#113A30] cursor-pointer"
+                  disabled={loginBusy}
+                  onClick={() => void handleResendVerification()}
+                  className="w-full h-11 rounded-lg border border-[#174D40]/25 text-[#174D40] text-sm font-semibold"
                 >
-                  Sign In with Google
+                  {loginBusy ? 'Sending...' : 'Resend Email Verification'}
                 </button>
               )}
               {user && (
@@ -311,7 +398,7 @@ export const AdminPage: React.FC = () => {
                   }}
                   className="w-full h-11 rounded-lg bg-[#174D40] text-white text-sm font-semibold hover:bg-[#113A30]"
                 >
-                  Sign Out / Switch Google Account
+                  Sign Out / Switch Account
                 </button>
               )}
               <Link
