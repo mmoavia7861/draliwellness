@@ -232,11 +232,11 @@ export const LAUNCH_SITE_SETTINGS: SiteSettings = {
       to: '/product/brainaxis-energy-boost',
     },
   ],
-  founderName: 'Dr. Ali Hassan',
+  founderName: 'Dr. Muhammad Ali Hassan',
   founderTitle: 'Founder — Dr. Ali Hassan Health & Wellness & BrainAxis',
-  founderPhotoUrl: '',
+  founderPhotoUrl: assetUrl('/assets/aistudio/founder-dr-muhammad-ali-hassan.webp'),
   founderBio:
-    'Dr. Ali Hassan Health & Wellness was founded to bring straightforward, transparently labeled nutritional supplements to households across Pakistan under the BrainAxis formulation line. Every launch product is presented with clear directions, full safety cautions, and direct customer support.',
+    'Dr. Muhammad Ali Hassan is a Pakistan-based medical researcher and the founder of Dr. Ali Hassan Health & Wellness and BrainAxis. His public LinkedIn profile lists studies at Shifa Tameer-e-Millat University (2019–2024), engagement with the Pakistan Academy of Neurological Surgery (PANS), published research and the Dr. Syed Qamar Alam Research Gold Medal (March 2025). The BrainAxis line focuses on transparent supplement information and responsible customer guidance.',
   founderMission:
     'To provide trustworthy, honestly labeled everyday wellness formulations backed by transparent product information and responsible guidance.',
   whatsappNumber: '923000000000',
