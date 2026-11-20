@@ -6,9 +6,9 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
-    // GitHub Pages serves this project from /draliwellness/, not from /.
-    // Keep root hosting unchanged for AI Studio and other deployment targets.
-    base: process.env.GITHUB_PAGES === 'true' ? '/draliwellness/' : '/',
+    // Custom domain draliwellness.com is served from the site root.
+    // Use / for GitHub Pages and all other root-hosted deployments.
+    base: '/',
     plugins: [
       react(),
       tailwindcss(),
