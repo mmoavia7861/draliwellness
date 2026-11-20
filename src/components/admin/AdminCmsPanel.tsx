@@ -22,6 +22,7 @@ export const AdminCmsPanel: React.FC<AdminCmsPanelProps> = ({
   onSave,
 }) => {
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
 
   const banners = cmsDraft.banners ?? [];
   const faqs = cmsDraft.faqs ?? [];
@@ -51,8 +52,11 @@ export const AdminCmsPanel: React.FC<AdminCmsPanelProps> = ({
       onSubmit={async (e) => {
         e.preventDefault();
         setSaving(true);
+        setError('');
         try {
           await onSave(cmsDraft);
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'Unable to save website settings.');
         } finally {
           setSaving(false);
         }
@@ -76,6 +80,12 @@ export const AdminCmsPanel: React.FC<AdminCmsPanelProps> = ({
           {saving ? 'Saving...' : 'Save All CMS Changes'}
         </button>
       </div>
+
+      {error && (
+        <p role="alert" className="p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-800">
+          {error}
+        </p>
+      )}
 
       {/* 1. Branding & Announcement */}
       <section className="space-y-4">
