@@ -208,6 +208,12 @@ export const LAUNCH_SITE_SETTINGS: SiteSettings = {
   bannerIntervalSec: 5,
   banners: [
     {
+      id: 'brainaxis-energy-boost-hero-2026',
+      imageUrl: assetUrl('/assets/aistudio/brainaxis-energy-boost-hero-banner.webp'),
+      alt: 'BrainAxis Energy Boost — premium multivitamin and mineral formula, Dr. Ali Hassan Health & Wellness hero banner',
+      to: '/product/brainaxis-energy-boost',
+    },
+    {
       id: 'sundex-d-podium',
       imageUrl: assetUrl('/assets/aistudio/Gemini_Generated_Image_a7r5pra7r5pra7r5__2__b6276b6b.jpg'),
       alt: 'BrainAxis SUNDEX-D Vitamin D3 200,000 IU softgel capsule showcase banner',

@@ -8,7 +8,15 @@ export type { HeroBannerSlide };
 
 const assetUrl = (url: string): string => `${import.meta.env.BASE_URL}${url.replace(/^\/+/, '')}`;
 
+const FEATURED_ENERGY_BOOST_BANNER: HeroBannerSlide = {
+  id: 'brainaxis-energy-boost-hero-2026',
+  imageUrl: assetUrl('/assets/aistudio/brainaxis-energy-boost-hero-banner.webp'),
+  alt: 'BrainAxis Energy Boost — premium multivitamin and mineral formula, Dr. Ali Hassan Health & Wellness hero banner',
+  to: '/product/brainaxis-energy-boost',
+};
+
 export const HERO_BANNER_SLIDES: HeroBannerSlide[] = [
+  FEATURED_ENERGY_BOOST_BANNER,
   {
     id: 'sundex-d-podium',
     imageUrl: assetUrl('/assets/aistudio/Gemini_Generated_Image_a7r5pra7r5pra7r5__2__b6276b6b.jpg'),
@@ -42,8 +50,15 @@ export const HeroBannerCarousel: React.FC = () => {
       ? siteSettings.banners.filter((b) => Boolean(b.imageUrl))
       : HERO_BANNER_SLIDES;
 
-  const slideCount = slides.length > 0 ? slides.length : HERO_BANNER_SLIDES.length;
-  const effectiveSlides = slides.length > 0 ? slides : HERO_BANNER_SLIDES;
+  // Show the new launch artwork alongside existing Firestore-managed banners.
+  // A matching configured entry may override the new banner without duplicating it.
+  const featuredSlide =
+    slides.find((slide) => slide.id === FEATURED_ENERGY_BOOST_BANNER.id) ?? FEATURED_ENERGY_BOOST_BANNER;
+  const effectiveSlides = [
+    featuredSlide,
+    ...slides.filter((slide) => slide.id !== FEATURED_ENERGY_BOOST_BANNER.id),
+  ];
+  const slideCount = effectiveSlides.length;
   const intervalMs = Math.min(60, Math.max(2, siteSettings.bannerIntervalSec || 5)) * 1000;
 
   const [activeIndex, setActiveIndex] = useState(0);
@@ -80,7 +95,7 @@ export const HeroBannerCarousel: React.FC = () => {
       onMouseLeave={() => setIsPaused(false)}
       className="relative w-full bg-[#0E1311] border-b border-[#174D40]/15 overflow-hidden group"
     >
-      <div className="relative w-full max-w-[1920px] mx-auto aspect-[3168/1344]">
+      <div className="relative w-full max-w-[1920px] mx-auto aspect-[16/9] md:aspect-[3168/1344]">
         {effectiveSlides.map((slide, index) => {
           const isActive = index === activeIndex;
           return (
@@ -93,11 +108,21 @@ export const HeroBannerCarousel: React.FC = () => {
                 isActive ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
               }`}
             >
+              {slide.id === FEATURED_ENERGY_BOOST_BANNER.id && (
+                <img
+                  src={slide.imageUrl}
+                  alt=""
+                  aria-hidden="true"
+                  referrerPolicy="no-referrer"
+                  className="absolute inset-0 w-full h-full object-cover opacity-35 blur-xl scale-105 pointer-events-none"
+                />
+              )}
               <img
                 src={slide.imageUrl}
                 alt={slide.alt || 'BrainAxis featured banner'}
                 referrerPolicy="no-referrer"
-                className="w-full h-full object-cover"
+                loading={index === 0 ? 'eager' : 'lazy'}
+                className={`relative w-full h-full ${slide.id === FEATURED_ENERGY_BOOST_BANNER.id ? 'object-contain' : 'object-cover'}`}
               />
             </Link>
           );
