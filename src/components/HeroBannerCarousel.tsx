@@ -6,28 +6,30 @@ import type { HeroBannerSlide } from '../types';
 
 export type { HeroBannerSlide };
 
+const assetUrl = (url: string): string => `${import.meta.env.BASE_URL}${url.replace(/^\/+/, '')}`;
+
 export const HERO_BANNER_SLIDES: HeroBannerSlide[] = [
   {
     id: 'sundex-d-podium',
-    imageUrl: '/assets/aistudio/Gemini_Generated_Image_a7r5pra7r5pra7r5__2__b6276b6b.jpg',
+    imageUrl: assetUrl('/assets/aistudio/Gemini_Generated_Image_a7r5pra7r5pra7r5__2__b6276b6b.jpg'),
     alt: 'BrainAxis SUNDEX-D Vitamin D3 200,000 IU softgel capsule showcase banner',
     to: '/product/brainaxis-sundex-d',
   },
   {
     id: 'sundex-d-lifestyle',
-    imageUrl: '/assets/aistudio/Gemini_Generated_Image_a7r5pra7r5pra7r5__1__8f069b03.jpg',
+    imageUrl: assetUrl('/assets/aistudio/Gemini_Generated_Image_a7r5pra7r5pra7r5__1__8f069b03.jpg'),
     alt: 'BrainAxis SUNDEX-D Stronger Bones & Immunity Vitamin D3 200,000 IU banner',
     to: '/product/brainaxis-sundex-d',
   },
   {
     id: 'energy-boost-lifestyle',
-    imageUrl: '/assets/aistudio/Gemini_Generated_Image_p04fcqp04fcqp04f_05bd9bbc.jpg',
+    imageUrl: assetUrl('/assets/aistudio/Gemini_Generated_Image_p04fcqp04fcqp04f_05bd9bbc.jpg'),
     alt: 'BrainAxis Energy Boost Complete Daily Nutrition 30 Tablets banner',
     to: '/product/brainaxis-energy-boost',
   },
   {
     id: 'energy-boost-podium',
-    imageUrl: '/assets/aistudio/Gemini_Generated_Image_h6gfxgh6gfxgh6gf_69a909aa.jpg',
+    imageUrl: assetUrl('/assets/aistudio/Gemini_Generated_Image_h6gfxgh6gfxgh6gf_69a909aa.jpg'),
     alt: 'BrainAxis Energy Boost Premium Multivitamin & Mineral Formula showcase banner',
     to: '/product/brainaxis-energy-boost',
   },
