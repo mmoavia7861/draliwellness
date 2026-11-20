@@ -5,7 +5,7 @@ import { useStore } from '../context/StoreContext';
 import { BrandLogo } from './BrandLogo';
 
 export const Navbar: React.FC = () => {
-  const { cart, setCartDrawerOpen, user } = useStore();
+  const { cart, setCartDrawerOpen, user, isAdmin } = useStore();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -60,9 +60,11 @@ export const Navbar: React.FC = () => {
           <NavLink to="/contact" className={navLinkClass}>
             Contact
           </NavLink>
-          <NavLink to="/admin" className={navLinkClass}>
-            Admin
-          </NavLink>
+          {isAdmin && (
+            <NavLink to="/admin" className={navLinkClass}>
+              Admin
+            </NavLink>
+          )}
         </nav>
 
         {/* Zone 3: Action Controls */}
@@ -150,7 +152,7 @@ export const Navbar: React.FC = () => {
             { to: '/faq', label: 'FAQ' },
             { to: '/contact', label: 'Contact' },
             { to: '/account', label: 'My Account' },
-            { to: '/admin', label: 'Admin' },
+            ...(isAdmin ? [{ to: '/admin', label: 'Admin' }] : []),
           ].map((item) => (
             <Link
               key={item.to}
