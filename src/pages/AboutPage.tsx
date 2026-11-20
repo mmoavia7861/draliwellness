@@ -1,12 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Stethoscope } from 'lucide-react';
+import { Award, BookOpen, ExternalLink, GraduationCap, ShieldCheck, Stethoscope } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 import { PageMeta } from '../components/PageMeta';
-import { BrandLogo } from '../components/BrandLogo';
 
 export const AboutPage: React.FC = () => {
   const { siteSettings } = useStore();
+  const founderPhotoUrl =
+    siteSettings.founderPhotoUrl?.trim() ||
+    `${import.meta.env.BASE_URL}assets/aistudio/founder-dr-muhammad-ali-hassan.webp`;
+  const linkedInUrl = 'https://www.linkedin.com/in/dr-muhammad-ali-hassan-5174b7287/';
 
   return (
     <>
@@ -28,59 +31,89 @@ export const AboutPage: React.FC = () => {
           </p>
         </header>
 
-        <section className="grid md:grid-cols-12 gap-10 items-center">
+        <section className="grid md:grid-cols-12 gap-10 items-center" aria-labelledby="founder-heading">
           <div className="md:col-span-5">
-            <div className="aspect-[4/5] bg-white border border-[#174D40]/15 rounded-2xl overflow-hidden flex items-center justify-center p-6 text-center">
-              {siteSettings.founderPhotoUrl ? (
-                <img
-                  src={siteSettings.founderPhotoUrl}
-                  alt={siteSettings.founderName || 'Dr. Ali Hassan'}
-                  referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover rounded-xl"
-                />
-              ) : (
-                <div className="space-y-4">
-                  <BrandLogo
-                    variant="founder"
-                    theme="light"
-                    title={siteSettings.founderName || 'Dr. Ali Hassan'}
-                  />
-                  <p className="text-xs text-[#252B29]/65">{siteSettings.founderTitle}</p>
-                </div>
-              )}
+            <div className="aspect-[4/5] bg-white border border-[#174D40]/15 rounded-2xl overflow-hidden shadow-sm">
+              <img
+                src={founderPhotoUrl}
+                alt="Dr. Muhammad Ali Hassan, founder of Dr. Ali Hassan Health & Wellness and BrainAxis"
+                className="w-full h-full object-cover object-top"
+                loading="eager"
+                decoding="async"
+              />
             </div>
+            <p className="mt-3 text-xs text-[#252B29]/65 text-center">
+              Dr. Muhammad Ali Hassan · Founder
+            </p>
           </div>
 
           <div className="md:col-span-7 space-y-5">
-            <h2 className="font-serif text-3xl font-semibold text-[#174D40]">
-              {siteSettings.founderName || 'Dr. Ali Hassan'}
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#A88649]">
+              Meet the Founder
+            </p>
+            <h2 id="founder-heading" className="font-serif text-3xl sm:text-4xl font-semibold text-[#174D40]">
+              Dr. Muhammad Ali Hassan
             </h2>
+            <p className="text-sm font-semibold text-[#174D40]">
+              Founder — Dr. Ali Hassan Health &amp; Wellness &amp; BrainAxis
+            </p>
+            <p className="text-sm sm:text-base text-[#252B29]/85 leading-relaxed">
+              Dr. Muhammad Ali Hassan is a Pakistan-based medical researcher whose professional interests
+              include neurosurgery, clinical research and research collaboration. His publicly listed
+              LinkedIn profile describes his pursuit of a surgeon-scientist career and highlights
+              academic research and professional engagement.
+            </p>
+            <p className="text-sm sm:text-base text-[#252B29]/85 leading-relaxed">
+              His profile lists studies at Shifa Tameer-e-Millat University (2019–2024), an association
+              with the Pakistan Academy of Neurological Surgery (PANS), research publications and
+              conference presentations. He also lists the Dr. Syed Qamar Alam Research Gold Medal,
+              awarded in March 2025 for excellence in research.
+            </p>
             <p className="text-sm sm:text-base text-[#252B29]/85 leading-relaxed whitespace-pre-line">
               {siteSettings.founderBio}
             </p>
             {siteSettings.founderMission && (
               <div className="bg-[#E8F1EB]/60 border border-[#174D40]/15 rounded-xl p-5">
                 <p className="text-xs font-semibold uppercase tracking-wider text-[#174D40] mb-1">
-                  Mission
+                  Our Mission
                 </p>
                 <p className="text-sm text-[#252B29]/85 leading-relaxed">
                   {siteSettings.founderMission}
                 </p>
               </div>
             )}
-            {siteSettings.socialLinks?.linkedin && (
-              <div className="pt-1">
-                <a
-                  href={siteSettings.socialLinks.linkedin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#174D40] hover:underline"
-                >
-                  <span>View LinkedIn Profile</span>
-                </a>
-              </div>
-            )}
+            <a
+              href={linkedInUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-lg border border-[#174D40]/20 px-5 py-3 text-sm font-semibold text-[#174D40] hover:bg-[#E8F1EB] transition-colors"
+            >
+              View Dr. Ali's LinkedIn Profile
+              <ExternalLink className="w-4 h-4" aria-hidden="true" />
+            </a>
           </div>
+        </section>
+
+        <section className="grid sm:grid-cols-3 gap-4" aria-label="Founder's professional background">
+          <div className="rounded-2xl border border-[#174D40]/12 bg-white p-5 space-y-2">
+            <GraduationCap className="w-6 h-6 text-[#A88649]" aria-hidden="true" />
+            <h3 className="font-semibold text-[#174D40]">Medical Education</h3>
+            <p className="text-sm text-[#252B29]/80">Shifa Tameer-e-Millat University · 2019–2024</p>
+          </div>
+          <div className="rounded-2xl border border-[#174D40]/12 bg-white p-5 space-y-2">
+            <BookOpen className="w-6 h-6 text-[#A88649]" aria-hidden="true" />
+            <h3 className="font-semibold text-[#174D40]">Research &amp; Mentoring</h3>
+            <p className="text-sm text-[#252B29]/80">Research publications, conference activity and PANS engagement</p>
+          </div>
+          <div className="rounded-2xl border border-[#174D40]/12 bg-white p-5 space-y-2">
+            <Award className="w-6 h-6 text-[#A88649]" aria-hidden="true" />
+            <h3 className="font-semibold text-[#174D40]">Research Recognition</h3>
+            <p className="text-sm text-[#252B29]/80">Dr. Syed Qamar Alam Research Gold Medal · March 2025</p>
+          </div>
+          <p className="sm:col-span-3 text-xs text-[#252B29]/65">
+            Professional details are based on the founder's public LinkedIn profile.
+            They do not constitute clinical evidence of the effectiveness of any supplement.
+          </p>
         </section>
 
         <section className="grid md:grid-cols-2 gap-6">
