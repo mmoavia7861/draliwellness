@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Award, BookOpen, ExternalLink, GraduationCap, ShieldCheck, Stethoscope } from 'lucide-react';
+import { Award, BookOpen, ExternalLink, GraduationCap, Instagram, ShieldCheck, Stethoscope } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 import { PageMeta } from '../components/PageMeta';
 
@@ -9,7 +9,12 @@ export const AboutPage: React.FC = () => {
   const founderPhotoUrl =
     siteSettings.founderPhotoUrl?.trim() ||
     `${import.meta.env.BASE_URL}assets/aistudio/founder-dr-muhammad-ali-hassan.webp`;
-  const linkedInUrl = 'https://www.linkedin.com/in/dr-muhammad-ali-hassan-5174b7287/';
+  const linkedInUrl =
+    siteSettings.socialLinks?.linkedin?.trim() ||
+    'https://www.linkedin.com/in/dr-muhammad-ali-hassan-5174b7287/';
+  const instagramUrl =
+    siteSettings.socialLinks?.instagram?.trim() ||
+    'https://www.instagram.com/dr.ali.neurosurgeon/';
 
   return (
     <>
@@ -33,7 +38,7 @@ export const AboutPage: React.FC = () => {
 
         <section className="grid md:grid-cols-12 gap-10 items-center" aria-labelledby="founder-heading">
           <div className="md:col-span-5">
-            <div className="aspect-[4/5] bg-white border border-[#174D40]/15 rounded-2xl overflow-hidden shadow-sm">
+            <div className="aspect-square bg-white border border-[#174D40]/15 rounded-2xl overflow-hidden shadow-sm">
               <img
                 src={founderPhotoUrl}
                 alt="Dr. Muhammad Ali Hassan, founder of Dr. Ali Hassan Health & Wellness and BrainAxis"
@@ -82,15 +87,27 @@ export const AboutPage: React.FC = () => {
                 </p>
               </div>
             )}
-            <a
-              href={linkedInUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-lg border border-[#174D40]/20 px-5 py-3 text-sm font-semibold text-[#174D40] hover:bg-[#E8F1EB] transition-colors"
-            >
-              View Dr. Ali's LinkedIn Profile
-              <ExternalLink className="w-4 h-4" aria-hidden="true" />
-            </a>
+            <div className="flex flex-wrap items-center gap-3" aria-label="Dr. Ali's professional social profiles">
+              <a
+                href={linkedInUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-lg border border-[#174D40]/20 px-5 py-3 text-sm font-semibold text-[#174D40] hover:bg-[#E8F1EB] transition-colors"
+              >
+                LinkedIn Profile
+                <ExternalLink className="w-4 h-4" aria-hidden="true" />
+              </a>
+              <a
+                href={instagramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-lg border border-[#174D40]/20 px-5 py-3 text-sm font-semibold text-[#174D40] hover:bg-[#E8F1EB] transition-colors"
+              >
+                <Instagram className="w-4 h-4" aria-hidden="true" />
+                Instagram Profile
+                <ExternalLink className="w-4 h-4" aria-hidden="true" />
+              </a>
+            </div>
           </div>
         </section>
 
