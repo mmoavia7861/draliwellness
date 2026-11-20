@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   AlertCircle,
@@ -16,6 +16,10 @@ import {
   type AssistantMessage,
   serializeCatalogForAssistant,
 } from '../utils/assistant';
+import { getOfflineGuideAnswer } from '../utils/offlineGuide';
+
+// Public URL only. GEMINI_API_KEY must NEVER be added to the frontend build.
+const ASSISTANT_API_BASE = (import.meta.env.VITE_AI_GUIDE_API_BASE_URL || '').trim().replace(/\/$/, '');
 
 const QUICK_PROMPTS = [
   'Compare Energy Boost vs SUNDEX-D',
@@ -35,6 +39,32 @@ export const AiAssistantWidget: React.FC<{
   const [question, setQuestion] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [aiStatus, setAiStatus] = useState<'checking' | 'ready' | 'offline'>('checking');
+
+  useEffect(() => {
+    let mounted = true;
+    const controller = new AbortController();
+    const checkAvailability = async () => {
+      try {
+        const response = await fetch(`${ASSISTANT_API_BASE}/api/assistant/status`, {
+          headers: { Accept: 'application/json' },
+          signal: controller.signal,
+        });
+        if (!response.ok || !response.headers.get('content-type')?.includes('application/json')) {
+          throw new Error('AI backend is not available on this hosting.');
+        }
+        const result = (await response.json()) as { enabled?: boolean };
+        if (mounted) setAiStatus(result.enabled ? 'ready' : 'offline');
+      } catch {
+        if (mounted) setAiStatus('offline');
+      }
+    };
+    void checkAvailability();
+    return () => {
+      mounted = false;
+      controller.abort();
+    };
+  }, []);
 
   const catalogPayload = useMemo(
     () => serializeCatalogForAssistant(liveProducts, siteSettings),
@@ -52,7 +82,18 @@ export const AiAssistantWidget: React.FC<{
     setLoading(true);
 
     try {
-      const response = await fetch('/api/assistant/ask', {
+      if (aiStatus !== 'ready') {
+        setMessages([
+          ...nextHistory,
+          {
+            role: 'model',
+            text: getOfflineGuideAnswer(trimmed, catalogPayload.products, catalogPayload.site),
+          },
+        ]);
+        return;
+      }
+
+      const response = await fetch(`${ASSISTANT_API_BASE}/api/assistant/ask`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -63,6 +104,9 @@ export const AiAssistantWidget: React.FC<{
         }),
       });
 
+      if (!response.headers.get('content-type')?.includes('application/json')) {
+        throw new Error('AI backend returned a webpage instead of the API response.');
+      }
       const data = (await response.json().catch(() => ({}))) as {
         reply?: string;
         error?: string;
@@ -80,7 +124,15 @@ export const AiAssistantWidget: React.FC<{
         err instanceof Error
           ? err.message
           : 'Unable to generate an AI response right now. Please try again.';
-      setErrorMessage(message);
+      setAiStatus('offline');
+      setErrorMessage(`Live Gemini Flash-Lite is unavailable (${message}). Showing published product information instead.`);
+      setMessages([
+        ...nextHistory,
+        {
+          role: 'model',
+          text: getOfflineGuideAnswer(trimmed, catalogPayload.products, catalogPayload.site),
+        },
+      ]);
     } finally {
       setLoading(false);
     }
@@ -113,23 +165,25 @@ export const AiAssistantWidget: React.FC<{
                 BrainAxis AI Supplement Guide
               </h3>
               <span className="text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-[#E8F1EB] text-[#174D40]">
-                Instant Q&amp;A
+                {aiStatus === 'ready' ? 'Gemini Flash-Lite · Free tier' : aiStatus === 'checking' ? 'Connecting AI…' : 'Offline Label Guide'}
               </span>
             </div>
             <p className="text-xs sm:text-sm text-[#252B29]/75">
-              Ask about Energy Boost, SUNDEX-D® 200,000 IU label directions, or Cash on Delivery in English or Roman Urdu.
+              Ask about Energy Boost, SUNDEX-D® 200,000 IU label directions, or Cash on Delivery in English or Roman Urdu. {aiStatus === 'offline' ? 'The live AI backend is offline; basic product information remains available.' : ''}
             </p>
           </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 self-start sm:self-center shrink-0">
-          <Link
-            to="/ai-studio"
-            className="h-9 px-3 rounded-lg border border-[#174D40]/20 bg-white text-xs font-semibold text-[#174D40] hover:bg-[#E8F1EB]/60 inline-flex items-center gap-1.5 transition-colors"
-          >
-            <span>Full Studio &amp; Web Search</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
+          {import.meta.env.VITE_ENABLE_AI_STUDIO === 'true' && aiStatus === 'ready' && (
+            <Link
+              to="/ai-studio"
+              className="h-9 px-3 rounded-lg border border-[#174D40]/20 bg-white text-xs font-semibold text-[#174D40] hover:bg-[#E8F1EB]/60 inline-flex items-center gap-1.5 transition-colors"
+            >
+              <span>Full Studio &amp; Web Search</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          )}
 
           {messages.length > 0 && (
             <button

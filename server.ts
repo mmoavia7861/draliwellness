@@ -99,29 +99,13 @@ async function startServer() {
       { role: 'user' as const, parts: [{ text: message }] },
     ];
 
+    // Only use models listed on the Gemini API free tier, never paid-only fallbacks.
     const attempts: Array<{
       model: string;
-      config: {
-        systemInstruction: string;
-        maxOutputTokens: number;
-        thinkingConfig?: { thinkingLevel: ThinkingLevel };
-      };
+      config: { systemInstruction: string; maxOutputTokens: number };
     }> = [
-      {
-        model: 'gemini-4-hydrogen',
-        config: {
-          systemInstruction,
-          thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
-          maxOutputTokens: 512,
-        },
-      },
-      {
-        model: 'gemini-3.1-flash-lite',
-        config: {
-          systemInstruction,
-          maxOutputTokens: 512,
-        },
-      },
+      { model: 'gemini-3.1-flash-lite', config: { systemInstruction, maxOutputTokens: 512 } },
+      { model: 'gemini-2.5-flash-lite', config: { systemInstruction, maxOutputTokens: 512 } },
     ];
 
     let lastError: unknown = null;
@@ -149,8 +133,8 @@ async function startServer() {
       } catch (error: unknown) {
         lastError = error;
         const errObj = error as { status?: number };
-        const isTransient = errObj?.status === 503 || errObj?.status === 504 || errObj?.status === 429;
-        if (isTransient && i < attempts.length - 1) {
+        const shouldTryFreeFallback = errObj?.status === 404 || errObj?.status === 503 || errObj?.status === 504;
+        if (shouldTryFreeFallback && i < attempts.length - 1) {
           console.warn(`Primary model ${attempt.model} returned ${errObj?.status}; trying fallback model.`);
           continue;
         }
@@ -161,6 +145,9 @@ async function startServer() {
     const errObj = lastError as { status?: number; message?: string };
     const cleanMessage = extractReadableErrorMessage(lastError);
     console.error('Gemini assistant error:', cleanMessage);
+    if (errObj?.status === 429) {
+      return res.status(429).json({ error: 'Free Gemini AI usage limit reached. Please try again later or use the offline product guide.' });
+    }
     const status =
       typeof errObj?.status === 'number' && errObj.status >= 400 && errObj.status < 600
         ? errObj.status
