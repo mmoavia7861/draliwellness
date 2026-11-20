@@ -254,7 +254,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         let adminFlag = Boolean(isBootstrapped);
         if (!adminFlag && nextUser.emailVerified) {
           const adminSnap = await getDoc(doc(db, 'admins', nextUser.uid));
-          if (adminSnap.exists()) {
+          if (adminSnap.exists() && ['super_admin', 'editor'].includes(adminSnap.data().role)) {
             adminFlag = true;
           }
         }
