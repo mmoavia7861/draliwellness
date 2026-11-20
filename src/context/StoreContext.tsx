@@ -234,6 +234,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Auth listener & Admin check
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (nextUser) => {
+      setAdminChecked(false);
+      setIsAdmin(false);
       setUser(nextUser);
       setAuthReady(true);
 
@@ -268,12 +270,14 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             });
           }
         }
+        // Ignore stale admin verification if the user changed during an async check.
+        if (auth.currentUser?.uid !== nextUser.uid) return;
         setIsAdmin(adminFlag);
       } catch (err) {
         console.error('Admin verification check error:', err);
         setIsAdmin(false);
       } finally {
-        setAdminChecked(true);
+        if (auth.currentUser?.uid === nextUser.uid) setAdminChecked(true);
       }
 
       // Sync customer public/private profile
@@ -442,43 +446,39 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
   }, [isAdmin, adminChecked]);
 
+  // Add missing launch records only. Never overwrite live prices, stock, orders
+  // or administrator-authored CMS settings when initializing the store.
   const seedLaunchCatalog = useCallback(async () => {
-    if (!isAdmin) return;
+    if (!isAdmin) throw new Error('Administrator permissions are required to initialize the catalog.');
     try {
       const batch = writeBatch(db);
-
-      for (const cat of LAUNCH_CATEGORIES) {
-        const ref = doc(db, 'categories', cat.id);
-        batch.set(ref, {
-          ...cat,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        });
+      const candidateDocs = [
+        ...LAUNCH_CATEGORIES.map((category) => ({
+          ref: doc(db, 'categories', category.id),
+          data: { ...category, createdAt: serverTimestamp(), updatedAt: serverTimestamp() },
+        })),
+        ...LAUNCH_PRODUCTS.map((product) => ({
+          ref: doc(db, 'products', product.id),
+          data: { ...product, createdAt: serverTimestamp(), updatedAt: serverTimestamp() },
+        })),
+        {
+          ref: doc(db, 'siteSettings', 'main'),
+          data: { ...LAUNCH_SITE_SETTINGS, updatedAt: serverTimestamp() },
+        },
+        ...LAUNCH_SERVICES.map((service) => ({
+          ref: doc(db, 'services', service.id),
+          data: { ...service, createdAt: serverTimestamp(), updatedAt: serverTimestamp() },
+        })),
+      ];
+      const current = await Promise.all(candidateDocs.map((candidate) => getDoc(candidate.ref)));
+      let inserted = 0;
+      for (let idx = 0; idx < candidateDocs.length; idx += 1) {
+        if (!current[idx].exists()) {
+          batch.set(candidateDocs[idx].ref, candidateDocs[idx].data);
+          inserted += 1;
+        }
       }
-
-      for (const prod of LAUNCH_PRODUCTS) {
-        const ref = doc(db, 'products', prod.id);
-        batch.set(ref, {
-          ...prod,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        });
-      }
-
-      batch.set(doc(db, 'siteSettings', 'main'), {
-        ...LAUNCH_SITE_SETTINGS,
-        updatedAt: serverTimestamp(),
-      });
-
-      for (const svc of LAUNCH_SERVICES) {
-        batch.set(doc(db, 'services', svc.id), {
-          ...svc,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        });
-      }
-
-      await batch.commit();
+      if (inserted > 0) await batch.commit();
       setFirestoreSeeded(true);
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, 'products/seed');
