@@ -39,7 +39,17 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      return isBootstrappedAdmin() || (isVerifiedUser() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
+      return isBootstrappedAdmin() ||
+        (isVerifiedUser() &&
+          exists(/databases/$(database)/documents/admins/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role in ['super_admin', 'editor']);
+    }
+
+    function isSuperAdmin() {
+      return isBootstrappedAdmin() ||
+        (isVerifiedUser() &&
+          exists(/databases/$(database)/documents/admins/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'super_admin');
     }
 
     function isValidSlug(slug) {
@@ -605,12 +615,26 @@ service cloud.firestore {
 
     match /admins/{userId} {
       allow get: if isValidId(userId) && (isOwner(userId) || isAdmin());
-      allow list: if isAdmin();
-      allow create: if isValidId(userId) && (isAdmin() || (isBootstrappedAdmin() && userId == request.auth.uid))
+      allow list: if isSuperAdmin();
+      // Only a super admin can grant access. Initial self-bootstrap is allowed
+      // exclusively for the designated verified owner email.
+      allow create: if isValidId(userId)
         && isValidAdminMember(incoming())
         && incoming().uid == userId
-        && incoming().createdAt == request.time;
-      allow update, delete: if isValidId(userId) && isAdmin();
+        && incoming().createdAt == request.time
+        && (
+          (isBootstrappedAdmin() && userId == request.auth.uid
+            && incoming().role == 'super_admin'
+            && incoming().email == request.auth.token.email)
+          || (isSuperAdmin() && userId != request.auth.uid)
+        );
+      allow update: if isValidId(userId) && isSuperAdmin()
+        && userId != request.auth.uid
+        && isValidAdminMember(incoming())
+        && incoming().uid == existing().uid
+        && incoming().createdAt == existing().createdAt;
+      allow delete: if isValidId(userId) && isSuperAdmin()
+        && userId != request.auth.uid;
     }
 
     match /auditLogs/{logId} {
