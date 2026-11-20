@@ -70,7 +70,7 @@ const RESEARCH_STARTER_QUERIES = [
 ];
 
 export const AiStudioPage: React.FC = () => {
-  const { user, authReady, signInWithGoogle, liveProducts, siteSettings } = useStore();
+  const { user, authReady, liveProducts, siteSettings } = useStore();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialTab = searchParams.get('tab') === 'search' ? 'search' : 'chat';
 
@@ -435,13 +435,12 @@ export const AiStudioPage: React.FC = () => {
             </div>
 
             {!user && authReady && (
-              <button
-                type="button"
-                onClick={() => void signInWithGoogle()}
+              <Link
+                to="/account"
                 className="h-11 px-4 rounded-xl border border-[#174D40]/25 bg-white text-[#174D40] text-xs sm:text-sm font-semibold inline-flex items-center gap-2 hover:bg-[#E8F1EB]/70 transition-colors cursor-pointer"
               >
                 <LogIn className="w-4 h-4" />
-                <span>Sign in with Google</span>
+                <span>Sign in with Email</span>
               </button>
             )}
           </div>
@@ -512,15 +511,14 @@ export const AiStudioPage: React.FC = () => {
                       Save conversations across visits
                     </p>
                     <p className="text-xs text-[#252B29]/70 leading-relaxed">
-                      Chat freely right now, or sign in with Google to save and reopen your supplement discussions anytime.
+                      Chat freely right now, or sign in with email to save and reopen your supplement discussions anytime.
                     </p>
-                    <button
-                      type="button"
-                      onClick={() => void signInWithGoogle()}
+                    <Link
+                      to="/account"
                       className="w-full h-9 rounded-lg border border-[#174D40] text-[#174D40] text-xs font-semibold hover:bg-[#174D40] hover:text-white transition-colors cursor-pointer"
                     >
-                      Continue with Google
-                    </button>
+                      Sign In with Email
+                    </Link>
                   </div>
                 )}
               </div>
@@ -944,15 +942,14 @@ export const AiStudioPage: React.FC = () => {
                 {!user ? (
                   <div className="space-y-3 text-xs text-[#252B29]/75">
                     <p>
-                      Sign in with Google to save your grounded nutrition queries and source citations for future visits.
+                      Sign in with Email to save your grounded nutrition queries and source citations for future visits.
                     </p>
-                    <button
-                      type="button"
-                      onClick={() => void signInWithGoogle()}
+                    <Link
+                      to="/account"
                       className="w-full h-9 rounded-lg border border-[#174D40] text-[#174D40] text-xs font-semibold hover:bg-[#174D40] hover:text-white transition-colors cursor-pointer"
                     >
-                      Continue with Google
-                    </button>
+                      Sign In with Email
+                    </Link>
                   </div>
                 ) : searchHistory.length === 0 ? (
                   <p className="text-xs text-[#252B29]/65 leading-relaxed">
