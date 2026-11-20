@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { auth, storage } from '../../firebase';
 import { Plus, Trash2, X } from 'lucide-react';
 import type {
   Category,
@@ -84,6 +86,7 @@ export const AdminProductEditor: React.FC<AdminProductEditorProps> = ({
   const [sortOrder, setSortOrder] = useState(String(initialProduct?.sortOrder ?? 10));
 
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [error, setError] = useState('');
 
   // For the single-pack launch products, the sellable variant must follow the
@@ -104,27 +107,53 @@ export const AdminProductEditor: React.FC<AdminProductEditorProps> = ({
     );
   };
 
-  const handleImageFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 400_000) {
-      setError('Uploaded image must be under 400KB or use a hosted/static image URL.');
+    e.target.value = '';
+    setError('');
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      setError('Please upload a JPG, PNG, or WebP product image.');
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === 'string' && reader.result.length <= 600) {
-        setImageUrl(reader.result);
-      } else {
-        setError('For Firestore storage, paste an image URL path under 600 characters.');
-      }
-    };
-    reader.readAsDataURL(file);
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Product images must be under 5 MB.');
+      return;
+    }
+    const admin = auth.currentUser;
+    if (!admin || !admin.emailVerified) {
+      setError('Sign in with your verified admin Google account before uploading.');
+      return;
+    }
+    setUploadingImage(true);
+    try {
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-').slice(-100);
+      const path = `product-images/${admin.uid}/${Date.now()}-${safeName}`;
+      const uploaded = await uploadBytes(ref(storage, path), file, {
+        contentType: file.type,
+        cacheControl: 'public,max-age=86400',
+      });
+      const url = await getDownloadURL(uploaded.ref);
+      setImageUrl(url);
+    } catch (err) {
+      const code = (err as { code?: string } | null)?.code ?? '';
+      setError(code.includes('unauthorized')
+        ? 'Firebase Storage access was denied. Publish storage.rules in Firebase Console and verify this Google account is the authorized admin.'
+        : code.includes('bucket-not-found') || code.includes('object-not-found')
+          ? 'Firebase Storage bucket is not configured yet. Enable Storage in Firebase Console.'
+          : err instanceof Error ? err.message : 'Image upload failed. Verify Firebase Storage setup.');
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    if (uploadingImage) {
+      setError('Please finish the image upload before saving this product.');
+      return;
+    }
     if (!name.trim()) {
       setError('Product name is required.');
       return;
@@ -397,7 +426,7 @@ export const AdminProductEditor: React.FC<AdminProductEditorProps> = ({
               <input
                 type="file"
                 accept="image/*"
-                onChange={handleImageFile}
+                onChange={(e) => void handleImageFile(e)}
                 className="w-full text-xs pt-1.5"
               />
             </div>
@@ -848,10 +877,10 @@ export const AdminProductEditor: React.FC<AdminProductEditorProps> = ({
             </button>
             <button
               type="submit"
-              disabled={saving}
+              disabled={saving || uploadingImage}
               className="h-10 px-6 rounded-lg bg-[#174D40] text-white text-sm font-semibold hover:bg-[#113A30] disabled:opacity-60 cursor-pointer"
             >
-              {saving ? 'Saving...' : 'Save Product'}
+              {uploadingImage ? 'Uploading image...' : saving ? 'Saving...' : 'Save Product'}
             </button>
           </div>
         </form>
