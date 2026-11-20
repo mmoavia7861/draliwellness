@@ -86,6 +86,18 @@ export const AdminProductEditor: React.FC<AdminProductEditorProps> = ({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
+  // For the single-pack launch products, the sellable variant must follow the
+  // base price. Multi-variant products retain individually configured prices.
+  const handleBasePriceChange = (raw: string) => {
+    setPricePkr(raw);
+    const amount = Number(raw);
+    if (raw !== '' && Number.isFinite(amount) && amount >= 0 && variants.length === 1) {
+      setVariants((current) =>
+        current.map((variant) => ({ ...variant, pricePkr: amount }))
+      );
+    }
+  };
+
   const handleToggleCat = (catId: string) => {
     setCategoryIds((prev) =>
       prev.includes(catId) ? prev.filter((c) => c !== catId) : [...prev, catId]
@@ -281,6 +293,10 @@ export const AdminProductEditor: React.FC<AdminProductEditorProps> = ({
           </div>
 
           {/* Pricing & Inventory */}
+          <p className="text-xs text-[#174D40]/80">
+            For a product with one pack variant, changing the selling price also updates
+            that variant. Products with multiple pack sizes have separate prices below.
+          </p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div className="space-y-1">
               <label className="text-xs font-semibold">Price / MRP (PKR) *</label>
@@ -289,7 +305,7 @@ export const AdminProductEditor: React.FC<AdminProductEditorProps> = ({
                 min={0}
                 required
                 value={pricePkr}
-                onChange={(e) => setPricePkr(e.target.value)}
+                onChange={(e) => handleBasePriceChange(e.target.value)}
                 className="w-full h-10 px-3 rounded-lg border border-[#174D40]/20 bg-white tabular-nums"
               />
             </div>
