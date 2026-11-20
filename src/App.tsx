@@ -42,7 +42,7 @@ export default function App() {
   return (
     <ErrorBoundary>
       <StoreProvider>
-        <BrowserRouter>
+        <BrowserRouter basename={import.meta.env.BASE_URL}>
           <ScrollToTop />
           <div className="min-h-screen flex flex-col bg-[#FAF8F2] text-[#252B29]">
             <AnnouncementBar />
