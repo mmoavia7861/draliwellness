@@ -27,6 +27,8 @@ jobs:
         uses: oven-sh/setup-bun@v2
       - name: Install dependencies
         run: bun install --frozen-lockfile
+      - name: Type-check storefront and admin
+        run: bun run lint
       - name: Build GitHub Pages version
         env:
           GITHUB_PAGES: 'true'
@@ -69,6 +71,14 @@ jobs:
               echo "::error::React storefront did not render in headless Chrome."
               tail -n 60 /tmp/browser-errors.log || true
               head -c 1000 /tmp/rendered.html || true
+              exit 1
+            fi
+            timeout 45 "$BROWSER" --headless --no-sandbox --disable-dev-shm-usage --disable-gpu --no-first-run --virtual-time-budget=12000 --dump-dom "${SITE_URL}admin?v=${GITHUB_SHA}" > /tmp/admin-rendered.html 2> /tmp/admin-browser-errors.log || true
+            if grep -q 'Admin Control Panel' /tmp/admin-rendered.html; then
+              echo "Admin protected login route rendered successfully."
+            else
+              echo "::error::Admin page failed to render in Chrome."
+              tail -n 60 /tmp/admin-browser-errors.log || true
               exit 1
             fi
           else
