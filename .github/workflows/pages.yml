@@ -51,10 +51,10 @@ jobs:
           echo "Verifying hosted page at $SITE_URL"
           sleep 8
           curl --fail --silent --show-error --location --retry 4 --retry-delay 3 "${SITE_URL}?v=${GITHUB_SHA}" -o /tmp/site.html
-          JS_ASSET="$(grep -oE '/draliwellness/assets/[^"]+\\.js' /tmp/site.html | head -n 1 || true)"
+          JS_ASSET="$(grep -oE '/draliwellness/assets/[^"]+js' /tmp/site.html | head -n 1 || true)"
           if [[ -z "$JS_ASSET" ]]; then
             echo "::error::The served HTML does not reference the built project JavaScript."
-            head -c 1200 /tmp/site.html
+            tail -c 700 /tmp/site.html
             exit 1
           fi
           echo "JavaScript entry: $JS_ASSET"
