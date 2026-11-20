@@ -74,8 +74,8 @@ jobs:
               exit 1
             fi
             timeout 45 "$BROWSER" --headless --no-sandbox --disable-dev-shm-usage --disable-gpu --no-first-run --virtual-time-budget=12000 --dump-dom "${SITE_URL}admin?v=${GITHUB_SHA}" > /tmp/admin-rendered.html 2> /tmp/admin-browser-errors.log || true
-            if grep -q 'Admin Control Panel' /tmp/admin-rendered.html; then
-              echo "Admin protected login route rendered successfully."
+            if grep -q 'Admin Control Panel' /tmp/admin-rendered.html && grep -q 'Login to Admin Panel' /tmp/admin-rendered.html && grep -q 'Admin Gmail / Email' /tmp/admin-rendered.html && ! grep -q 'Sign In with Google' /tmp/admin-rendered.html; then
+              echo "Admin email/password form rendered successfully; Google button absent."
             else
               echo "::error::Admin page failed to render in Chrome."
               tail -n 60 /tmp/admin-browser-errors.log || true
