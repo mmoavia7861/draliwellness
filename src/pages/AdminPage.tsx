@@ -110,6 +110,10 @@ export const AdminPage: React.FC = () => {
   const [adminMembers, setAdminMembers] = useState<AdminMember[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [statusBanner, setStatusBanner] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [loadError, setLoadError] = useState('');
+  const [loadingAdmin, setLoadingAdmin] = useState(false);
+  const [savingPriceId, setSavingPriceId] = useState<string | null>(null);
 
   // Category create/edit state
   const [editingCatId, setEditingCatId] = useState<string | null>(null);
@@ -158,8 +162,11 @@ export const AdminPage: React.FC = () => {
 
   const loadAdminCollections = async () => {
     if (!isAdmin) return;
+    setLoadingAdmin(true);
+    setLoadError('');
     try {
-      const [ord, cpn, apt, inq, subs, usrs, adm, logs] = await Promise.all([
+      // One unavailable collection must not hide the other dashboard sections.
+      const [ord, cpn, apt, inq, subs, usrs, adm, logs] = await Promise.allSettled([
         fetchAllOrders(),
         fetchAllCoupons(),
         fetchAllAppointments(),
@@ -169,27 +176,68 @@ export const AdminPage: React.FC = () => {
         fetchAdminMembers(),
         fetchAuditLogs(),
       ]);
-      setOrders(ord);
-      setCourierDrafts(
-        Object.fromEntries(
-          ord.map((o) => [
-            o.id,
-            {
-              courierName: o.courierName || '',
-              courierTrackingNo: o.courierTrackingNo || '',
-            },
-          ])
-        )
-      );
-      setCoupons(cpn);
-      setAppointments(apt);
-      setInquiries(inq);
-      setSubscribers(subs);
-      setUsersList(usrs);
-      setAdminMembers(adm);
-      setAuditLogs(logs);
+      const failed: string[] = [];
+      if (ord.status === 'fulfilled') {
+        setOrders(ord.value);
+        setCourierDrafts(Object.fromEntries(ord.value.map((o) => [
+          o.id, { courierName: o.courierName || '', courierTrackingNo: o.courierTrackingNo || '' },
+        ])));
+      } else { failed.push('Orders'); }
+      if (cpn.status === 'fulfilled') setCoupons(cpn.value); else failed.push('Coupons');
+      if (apt.status === 'fulfilled') setAppointments(apt.value); else failed.push('Appointments');
+      if (inq.status === 'fulfilled') setInquiries(inq.value); else failed.push('Inquiries');
+      if (subs.status === 'fulfilled') setSubscribers(subs.value); else failed.push('Subscribers');
+      if (usrs.status === 'fulfilled') setUsersList(usrs.value); else failed.push('Customers');
+      if (adm.status === 'fulfilled') setAdminMembers(adm.value); else failed.push('Administrators');
+      if (logs.status === 'fulfilled') setAuditLogs(logs.value); else failed.push('Audit Logs');
+      if (failed.length) {
+        setLoadError(`Unable to load: ${failed.join(', ')}. Verify Firebase permissions, database and indexes. Other sections may still be available.`);
+        console.error('Admin collection read failures', { ord, cpn, apt, inq, subs, usrs, adm, logs });
+      }
     } catch (err) {
-      console.error('Admin load error:', err);
+      setLoadError(err instanceof Error ? err.message : 'Unable to load admin dashboard.');
+    } finally {
+      setLoadingAdmin(false);
+    }
+  };
+
+  const saveQuickPrice = async (product: Product, rawPrice: string) => {
+    const price = Number(rawPrice);
+    if (!Number.isFinite(price) || price <= 0 || price > 1000000) {
+      setLoadError('Enter a valid selling price between Rs. 1 and Rs. 1,000,000.');
+      return;
+    }
+    setSavingPriceId(product.id);
+    setLoadError('');
+    try {
+      const variants = product.variants?.length === 1
+        ? product.variants.map((variant) => ({ ...variant, pricePkr: price }))
+        : product.variants;
+      await saveProduct({ ...product, pricePkr: price, variants });
+      notify(`${product.name} price saved: ${formatPkr(price)} (including single-pack variant).`);
+    } catch (err) {
+      setLoadError(err instanceof Error ? err.message : 'Product price could not be saved.');
+    } finally {
+      setSavingPriceId(null);
+    }
+  };
+
+  const handleAdminLogin = async () => {
+    setLoginError('');
+    try {
+      await signInWithGoogle();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Google sign-in failed.';
+      const code = (err as { code?: string } | null)?.code || '';
+      setLoginError(
+        code.includes('unauthorized-domain')
+          ? 'This website domain is not authorized in Firebase Authentication. Add mmoavia7861.github.io under Firebase Console → Authentication → Settings → Authorized domains.'
+          : code.includes('popup-blocked')
+            ? 'The browser blocked the Google sign-in popup. Allow popups for this site and try again.'
+            : code.includes('popup-closed-by-user')
+              ? 'Google sign-in was cancelled. Select your authorized account and try again.'
+              : `Google sign-in failed: ${message}`
+      );
     }
   };
 
@@ -237,11 +285,16 @@ export const AdminPage: React.FC = () => {
                   : 'Sign in with an authorized administrator Google account to manage products, banners, orders, appointments, and storefront settings.'}
               </p>
             </div>
+            {loginError && (
+              <p role="alert" className="text-sm text-red-800 bg-red-50 border border-red-200 rounded-lg p-3">
+                {loginError}
+              </p>
+            )}
             <div className="space-y-2.5 pt-1">
               {!user && (
                 <button
                   type="button"
-                  onClick={() => void signInWithGoogle()}
+                  onClick={() => void handleAdminLogin()}
                   className="w-full h-11 rounded-lg bg-[#174D40] text-white text-sm font-semibold hover:bg-[#113A30] cursor-pointer"
                 >
                   Sign In with Google
@@ -261,7 +314,7 @@ export const AdminPage: React.FC = () => {
   }
 
   const validOrders = orders.filter((o) => o.status !== 'cancelled');
-  const totalRevenue = validOrders.reduce((sum, o) => sum + (o.totalPkr || 0), 0);
+  const totalOrderValue = validOrders.reduce((sum, o) => sum + (o.totalPkr || 0), 0);
   const pendingOrdersCount = orders.filter(
     (o) => o.status === 'placed' || o.status === 'confirmed' || o.status === 'processing'
   ).length;
@@ -341,10 +394,11 @@ export const AdminPage: React.FC = () => {
             <button
               type="button"
               onClick={() => void loadAdminCollections()}
+              disabled={loadingAdmin}
               className="h-10 px-4 rounded-lg bg-[#174D40] text-white text-xs font-semibold inline-flex items-center gap-1.5 hover:bg-[#113A30] cursor-pointer"
             >
               <RefreshCw className="w-4 h-4" />
-              <span>Refresh Data</span>
+              <span>{loadingAdmin ? 'Refreshing...' : 'Refresh Data'}</span>
             </button>
           </div>
         </div>
@@ -353,6 +407,12 @@ export const AdminPage: React.FC = () => {
           <div className="p-3.5 rounded-xl bg-[#E8F1EB] border border-[#174D40]/20 text-sm text-[#174D40] flex items-center gap-2">
             <Check className="w-4 h-4 shrink-0" />
             <span>{statusBanner}</span>
+          </div>
+        )}
+
+        {loadError && (
+          <div role="alert" className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-sm text-red-900">
+            {loadError}
           </div>
         )}
 
@@ -393,7 +453,7 @@ export const AdminPage: React.FC = () => {
           <div className="space-y-8">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               {[
-                { label: 'Valid Revenue', value: formatPkr(totalRevenue) },
+                { label: 'Order Value (not paid revenue)', value: formatPkr(totalOrderValue) },
                 { label: 'Total Orders', value: String(orders.length) },
                 { label: 'Pending Fulfillment', value: String(pendingOrdersCount) },
                 { label: 'Live Published Products', value: String(products.filter(isProductLive).length) },
@@ -475,7 +535,35 @@ export const AdminPage: React.FC = () => {
                         </p>
                       </td>
                       <td className="py-3 px-4 font-medium tabular-nums">
-                        {formatPkr(p.pricePkr)}
+                        <form
+                          className="flex items-center gap-2 min-w-[170px]"
+                          onSubmit={async (e) => {
+                            e.preventDefault();
+                            const input = e.currentTarget.elements.namedItem('newPrice') as HTMLInputElement | null;
+                            if (input) await saveQuickPrice(p, input.value);
+                          }}
+                        >
+                          <label className="sr-only" htmlFor={`price-${p.id}`}>Selling price for {p.name}</label>
+                          <input
+                            key={`${p.id}-${p.pricePkr}`}
+                            id={`price-${p.id}`}
+                            name="newPrice"
+                            type="number"
+                            min="1"
+                            max="1000000"
+                            step="1"
+                            required
+                            defaultValue={p.pricePkr}
+                            className="w-24 h-9 px-2 border border-[#174D40]/20 rounded-md bg-white text-xs tabular-nums"
+                          />
+                          <button
+                            type="submit"
+                            disabled={savingPriceId === p.id}
+                            className="h-9 px-2.5 rounded-md text-xs font-semibold bg-[#174D40] text-white disabled:opacity-60"
+                          >
+                            {savingPriceId === p.id ? 'Saving' : 'Save'}
+                          </button>
+                        </form>
                       </td>
                       <td className="py-3 px-4 tabular-nums">{p.stock}</td>
                       <td className="py-3 px-4 capitalize text-xs">
