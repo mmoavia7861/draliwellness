@@ -54,6 +54,7 @@ export const AdminPage: React.FC = () => {
     isAdmin,
     adminChecked,
     signInWithGoogle,
+    logout,
     products,
     categories,
     siteSettings,
@@ -298,6 +299,19 @@ export const AdminPage: React.FC = () => {
                   className="w-full h-11 rounded-lg bg-[#174D40] text-white text-sm font-semibold hover:bg-[#113A30] cursor-pointer"
                 >
                   Sign In with Google
+                </button>
+              )}
+              {user && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setLoginError('');
+                    try { await logout(); }
+                    catch (err) { setLoginError(err instanceof Error ? err.message : 'Sign out failed.'); }
+                  }}
+                  className="w-full h-11 rounded-lg bg-[#174D40] text-white text-sm font-semibold hover:bg-[#113A30]"
+                >
+                  Sign Out / Switch Google Account
                 </button>
               )}
               <Link
