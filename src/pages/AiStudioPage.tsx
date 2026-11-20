@@ -441,7 +441,7 @@ export const AiStudioPage: React.FC = () => {
               >
                 <LogIn className="w-4 h-4" />
                 <span>Sign in with Email</span>
-              </button>
+              </Link>
             )}
           </div>
         </div>
