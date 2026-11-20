@@ -67,6 +67,26 @@ const CART_STORAGE_KEY = 'dr_ali_hassan_cart_v1';
 const WISHLIST_STORAGE_KEY = 'dr_ali_hassan_wishlist_v1';
 const BOOTSTRAP_ADMIN_EMAIL = 'moavia400@gmail.com';
 
+// Apply the current launch price to Firestore records still carrying the old seed.
+// Newer admin-edited prices remain unchanged.
+function normalizeLegacyEnergyBoostPrice(product: Product): Product {
+  if (product.id !== 'brainaxis-energy-boost') return product;
+  const needsBaseUpdate = product.pricePkr === 1350;
+  const needsVariantUpdate = product.variants?.some(
+    (variant) => variant.id === 'eb-30-tablets' && variant.pricePkr === 1350
+  );
+  if (!needsBaseUpdate && !needsVariantUpdate) return product;
+  return {
+    ...product,
+    pricePkr: needsBaseUpdate ? 1295 : product.pricePkr,
+    variants: product.variants?.map((variant) =>
+      variant.id === 'eb-30-tablets' && variant.pricePkr === 1350
+        ? { ...variant, pricePkr: 1295 }
+        : variant
+    ),
+  };
+}
+
 interface StoreContextValue {
   user: User | null;
   authReady: boolean;
@@ -352,7 +372,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       (snap) => {
         if (!snap.empty) {
           const items = snap.docs
-            .map((d) => d.data() as Product)
+            .map((d) => normalizeLegacyEnergyBoostPrice(d.data() as Product))
             .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
           setProducts(items);
           setFirestoreSeeded(true);
@@ -391,7 +411,23 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       doc(db, 'siteSettings', 'main'),
       (snap) => {
         if (snap.exists()) {
-          setSiteSettings({ ...LAUNCH_SITE_SETTINGS, ...(snap.data() as SiteSettings) });
+          const saved = snap.data() as SiteSettings;
+          const savedPhone = (saved.whatsappNumber || '').replace(/[^0-9]/g, '');
+          setSiteSettings({
+            ...LAUNCH_SITE_SETTINGS,
+            ...saved,
+            // Replace only the previously seeded placeholder number, not custom admin values.
+            whatsappNumber:
+              !savedPhone || savedPhone === '923000000000'
+                ? LAUNCH_SITE_SETTINGS.whatsappNumber
+                : saved.whatsappNumber,
+            socialLinks: {
+              ...LAUNCH_SITE_SETTINGS.socialLinks,
+              ...saved.socialLinks,
+              instagram:
+                saved.socialLinks?.instagram || LAUNCH_SITE_SETTINGS.socialLinks?.instagram,
+            },
+          });
         }
       },
       (err) => {
@@ -538,6 +574,25 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, []);
 
   const liveProducts = useMemo(() => products.filter(isProductLive), [products]);
+
+  // Reprice existing browser carts when a product price changes in the live catalog.
+  useEffect(() => {
+    setCart((previousCart) => {
+      let changed = false;
+      const updated = previousCart.map((item) => {
+        const product = liveProducts.find((p) => p.id === item.productId);
+        if (!product) return item;
+        const variant = item.variantId
+          ? product.variants?.find((v) => v.id === item.variantId)
+          : undefined;
+        const currentPrice = variant ? variant.pricePkr : product.pricePkr;
+        if (currentPrice === item.unitPricePkr) return item;
+        changed = true;
+        return { ...item, unitPricePkr: currentPrice };
+      });
+      return changed ? updated : previousCart;
+    });
+  }, [liveProducts]);
   const visibleCategories = useMemo(
     () => getVisibleCategories(categories, products),
     [categories, products]
@@ -741,8 +796,12 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         };
       });
 
+      const repricedCart = cart.map((item, index) => ({
+        ...item,
+        unitPricePkr: verifiedItems[index].unitPricePkr,
+      }));
       const totals = calculateCartTotals(
-        cart,
+        repricedCart,
         siteSettings.shippingFeePkr,
         siteSettings.freeShippingThresholdPkr,
         appliedCoupon
