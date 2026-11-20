@@ -1,0 +1,6 @@
+{
+  "name": "Dr. Ali Hassan Health & Wellness",
+  "description": "Premium doctor-led wellness supplements by BrainAxis under Dr. Ali Hassan Health & Wellness. Shop Energy Boost and SUNDEX-D Vitamin D3 with nationwide delivery in Pakistan.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

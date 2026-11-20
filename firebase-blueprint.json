@@ -1,0 +1,440 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "A supplement or wellness product sold on Dr. Ali Hassan Health & Wellness.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "slug": { "type": "string", "maxLength": 128, "pattern": "^[a-z0-9\\-]+$" },
+        "name": { "type": "string", "minLength": 2, "maxLength": 160 },
+        "subtitle": { "type": "string", "maxLength": 240 },
+        "brand": { "type": "string", "maxLength": 80 },
+        "founderMention": { "type": "string", "maxLength": 80 },
+        "categoryIds": { "type": "array" },
+        "shortDescription": { "type": "string", "maxLength": 500 },
+        "overview": { "type": "string", "maxLength": 4000 },
+        "format": { "type": "string", "maxLength": 80 },
+        "packSize": { "type": "string", "maxLength": 80 },
+        "strength": { "type": "string", "maxLength": 80 },
+        "usageSummary": { "type": "string", "maxLength": 160 },
+        "pricePkr": { "type": "number" },
+        "compareAtPricePkr": { "type": "number" },
+        "stock": { "type": "number" },
+        "sku": { "type": "string", "maxLength": 64 },
+        "imageUrl": { "type": "string", "maxLength": 600 },
+        "galleryUrls": { "type": "array" },
+        "benefits": { "type": "array" },
+        "ingredientsSummary": { "type": "string", "maxLength": 2000 },
+        "supplementFacts": { "type": "array" },
+        "otherIngredients": { "type": "string", "maxLength": 1000 },
+        "directions": { "type": "string", "maxLength": 2000 },
+        "warnings": { "type": "string", "maxLength": 2000 },
+        "storageInstructions": { "type": "string", "maxLength": 1000 },
+        "allergens": { "type": "string", "maxLength": 500 },
+        "interactions": { "type": "string", "maxLength": 1000 },
+        "manufacturer": { "type": "string", "maxLength": 300 },
+        "countryOfOrigin": { "type": "string", "maxLength": 80 },
+        "batchNo": { "type": "string", "maxLength": 64 },
+        "mfgDate": { "type": "string", "maxLength": 32 },
+        "expDate": { "type": "string", "maxLength": 32 },
+        "enlistmentNo": { "type": "string", "maxLength": 64 },
+        "form7No": { "type": "string", "maxLength": 64 },
+        "certifications": { "type": "array" },
+        "faqs": { "type": "array" },
+        "variants": { "type": "array" },
+        "featured": { "type": "boolean" },
+        "published": { "type": "boolean" },
+        "complianceStatus": {
+          "type": "string",
+          "enum": ["draft", "awaiting_docs", "under_review", "approved", "archived"]
+        },
+        "sortOrder": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "slug",
+        "name",
+        "brand",
+        "pricePkr",
+        "stock",
+        "published",
+        "complianceStatus",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "Dynamic product category managed by administrators.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "slug": { "type": "string", "maxLength": 128, "pattern": "^[a-z0-9\\-]+$" },
+        "name": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "description": { "type": "string", "maxLength": 400 },
+        "imageUrl": { "type": "string", "maxLength": 600 },
+        "active": { "type": "boolean" },
+        "sortOrder": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "slug", "name", "active", "sortOrder", "createdAt", "updatedAt"]
+    },
+    "SiteSettings": {
+      "title": "SiteSettings",
+      "description": "Editable storefront CMS content, branding, policies, and commerce configuration.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 64 },
+        "businessName": { "type": "string", "maxLength": 160 },
+        "supplementBrandName": { "type": "string", "maxLength": 80 },
+        "tagline": { "type": "string", "maxLength": 200 },
+        "announcementEnabled": { "type": "boolean" },
+        "announcementText": { "type": "string", "maxLength": 240 },
+        "heroHeadline": { "type": "string", "maxLength": 200 },
+        "heroSubheadline": { "type": "string", "maxLength": 400 },
+        "banners": { "type": "array" },
+        "bannerIntervalSec": { "type": "number" },
+        "founderName": { "type": "string", "maxLength": 120 },
+        "founderTitle": { "type": "string", "maxLength": 120 },
+        "founderPhotoUrl": { "type": "string", "maxLength": 600 },
+        "founderBio": { "type": "string", "maxLength": 3000 },
+        "founderMission": { "type": "string", "maxLength": 1000 },
+        "whatsappNumber": { "type": "string", "maxLength": 32 },
+        "whatsappGreeting": { "type": "string", "maxLength": 300 },
+        "supportEmail": { "type": "string", "maxLength": 120 },
+        "supportHours": { "type": "string", "maxLength": 160 },
+        "shippingFeePkr": { "type": "number" },
+        "freeShippingThresholdPkr": { "type": "number" },
+        "codEnabled": { "type": "boolean" },
+        "onlinePaymentsEnabled": { "type": "boolean" },
+        "faqs": { "type": "array" },
+        "policies": { "type": "object" },
+        "socialLinks": { "type": "object" },
+        "seoTitle": { "type": "string", "maxLength": 160 },
+        "seoDescription": { "type": "string", "maxLength": 320 },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "businessName", "shippingFeePkr", "freeShippingThresholdPkr", "updatedAt"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Customer order record containing shipping details and line items.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "orderNumber": { "type": "string", "maxLength": 32 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "trackingKey": { "type": "string", "maxLength": 128 },
+        "customerName": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "customerEmail": { "type": "string", "maxLength": 160 },
+        "customerPhone": { "type": "string", "minLength": 7, "maxLength": 32 },
+        "shippingAddress": { "type": "string", "minLength": 5, "maxLength": 400 },
+        "city": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "province": { "type": "string", "maxLength": 80 },
+        "postalCode": { "type": "string", "maxLength": 20 },
+        "notes": { "type": "string", "maxLength": 500 },
+        "items": { "type": "array" },
+        "subtotalPkr": { "type": "number" },
+        "discountPkr": { "type": "number" },
+        "couponCode": { "type": "string", "maxLength": 40 },
+        "shippingFeePkr": { "type": "number" },
+        "totalPkr": { "type": "number" },
+        "paymentMethod": { "type": "string", "enum": ["cod", "whatsapp", "jazzcash", "easypaisa", "card"] },
+        "paymentStatus": { "type": "string", "enum": ["pending", "paid", "failed", "refunded"] },
+        "status": {
+          "type": "string",
+          "enum": ["placed", "confirmed", "processing", "shipped", "delivered", "cancelled"]
+        },
+        "courierName": { "type": "string", "maxLength": 80 },
+        "courierTrackingNo": { "type": "string", "maxLength": 80 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "orderNumber",
+        "userId",
+        "trackingKey",
+        "customerName",
+        "customerEmail",
+        "customerPhone",
+        "shippingAddress",
+        "city",
+        "items",
+        "subtotalPkr",
+        "shippingFeePkr",
+        "totalPkr",
+        "paymentMethod",
+        "paymentStatus",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "OrderTracking": {
+      "title": "OrderTracking",
+      "description": "Verification-gated non-PII tracking projection keyed by hashed orderNumber + contact.",
+      "type": "object",
+      "properties": {
+        "orderNumber": { "type": "string", "maxLength": 32 },
+        "status": {
+          "type": "string",
+          "enum": ["placed", "confirmed", "processing", "shipped", "delivered", "cancelled"]
+        },
+        "paymentMethod": { "type": "string", "maxLength": 32 },
+        "paymentStatus": { "type": "string", "maxLength": 32 },
+        "city": { "type": "string", "maxLength": 80 },
+        "totalPkr": { "type": "number" },
+        "itemCount": { "type": "number" },
+        "itemsSummary": { "type": "array" },
+        "courierName": { "type": "string", "maxLength": 80 },
+        "courierTrackingNo": { "type": "string", "maxLength": 80 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["orderNumber", "status", "paymentMethod", "paymentStatus", "totalPkr", "createdAt", "updatedAt"]
+    },
+    "Coupon": {
+      "title": "Coupon",
+      "description": "Promotional discount coupon configured by admin.",
+      "type": "object",
+      "properties": {
+        "code": { "type": "string", "maxLength": 40, "pattern": "^[A-Z0-9_\\-]+$" },
+        "discountType": { "type": "string", "enum": ["percent", "fixed"] },
+        "value": { "type": "number" },
+        "minOrderPkr": { "type": "number" },
+        "active": { "type": "boolean" },
+        "expiresAt": { "type": "string", "maxLength": 40 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["code", "discountType", "value", "active", "createdAt"]
+    },
+    "Service": {
+      "title": "Service",
+      "description": "Future or active wellness consultation service managed by admin.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "title": { "type": "string", "maxLength": 120 },
+        "description": { "type": "string", "maxLength": 1000 },
+        "providerName": { "type": "string", "maxLength": 120 },
+        "providerQualifications": { "type": "string", "maxLength": 200 },
+        "durationMinutes": { "type": "number" },
+        "feePkr": { "type": "number" },
+        "visible": { "type": "boolean" },
+        "bookingEnabled": { "type": "boolean" },
+        "sortOrder": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "title", "visible", "bookingEnabled", "sortOrder", "createdAt", "updatedAt"]
+    },
+    "Appointment": {
+      "title": "Appointment",
+      "description": "Wellness consultation booking request.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userId": { "type": "string", "maxLength": 128 },
+        "serviceId": { "type": "string", "maxLength": 128 },
+        "serviceTitle": { "type": "string", "maxLength": 120 },
+        "customerName": { "type": "string", "maxLength": 120 },
+        "customerEmail": { "type": "string", "maxLength": 160 },
+        "customerPhone": { "type": "string", "maxLength": 32 },
+        "preferredDate": { "type": "string", "maxLength": 32 },
+        "preferredSlot": { "type": "string", "maxLength": 40 },
+        "notes": { "type": "string", "maxLength": 400 },
+        "status": { "type": "string", "enum": ["requested", "confirmed", "rescheduled", "completed", "cancelled"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "serviceId", "customerName", "customerPhone", "preferredDate", "preferredSlot", "status", "createdAt", "updatedAt"]
+    },
+    "Review": {
+      "title": "Review",
+      "description": "Verified customer review moderated by admin.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "productId": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "authorName": { "type": "string", "maxLength": 80 },
+        "rating": { "type": "number" },
+        "comment": { "type": "string", "maxLength": 1000 },
+        "approved": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "productId", "userId", "authorName", "rating", "comment", "approved", "createdAt"]
+    },
+    "JournalPost": {
+      "title": "JournalPost",
+      "description": "Educational health journal article.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "slug": { "type": "string", "maxLength": 128, "pattern": "^[a-z0-9\\-]+$" },
+        "title": { "type": "string", "maxLength": 200 },
+        "category": { "type": "string", "maxLength": 80 },
+        "summary": { "type": "string", "maxLength": 500 },
+        "content": { "type": "string", "maxLength": 12000 },
+        "authorName": { "type": "string", "maxLength": 120 },
+        "published": { "type": "boolean" },
+        "publishedAt": { "type": "string", "maxLength": 40 },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "slug", "title", "category", "published", "updatedAt"]
+    },
+    "ContactInquiry": {
+      "title": "ContactInquiry",
+      "description": "Customer support inquiry submitted via contact form.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "name": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "email": { "type": "string", "maxLength": 160 },
+        "phone": { "type": "string", "maxLength": 32 },
+        "subject": { "type": "string", "maxLength": 160 },
+        "message": { "type": "string", "minLength": 5, "maxLength": 2000 },
+        "status": { "type": "string", "enum": ["new", "replied", "closed"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "email", "message", "status", "createdAt"]
+    },
+    "NewsletterSubscriber": {
+      "title": "NewsletterSubscriber",
+      "description": "Explicit opt-in newsletter subscription.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 160 },
+        "consent": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "email", "consent", "createdAt"]
+    },
+    "UserPublic": {
+      "title": "UserPublic",
+      "description": "Minimal non-PII user document.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "displayName": { "type": "string", "maxLength": 120 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "displayName", "createdAt", "updatedAt"]
+    },
+    "UserPrivateProfile": {
+      "title": "UserPrivateProfile",
+      "description": "Isolated PII profile, addresses, and wishlist for a customer.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "maxLength": 160 },
+        "phone": { "type": "string", "maxLength": 32 },
+        "addresses": { "type": "array" },
+        "wishlistProductIds": { "type": "array" },
+        "newsletterOptIn": { "type": "boolean" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email", "updatedAt"]
+    },
+    "AdminMember": {
+      "title": "AdminMember",
+      "description": "Authorized admin UID registry.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 160 },
+        "role": { "type": "string", "enum": ["super_admin", "editor"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role", "createdAt"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Immutable administrative action log.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "actorUid": { "type": "string", "maxLength": 128 },
+        "actorEmail": { "type": "string", "maxLength": 160 },
+        "action": { "type": "string", "maxLength": 120 },
+        "targetCollection": { "type": "string", "maxLength": 64 },
+        "targetId": { "type": "string", "maxLength": 128 },
+        "summary": { "type": "string", "maxLength": 400 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "actorUid", "action", "targetCollection", "targetId", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/products/{productId}": {
+      "schema": { "$ref": "#/entities/Product" },
+      "description": "Product catalog documents; published & approved items are publicly readable."
+    },
+    "/categories/{categoryId}": {
+      "schema": { "$ref": "#/entities/Category" },
+      "description": "Dynamic wellness product categories."
+    },
+    "/siteSettings/{settingId}": {
+      "schema": { "$ref": "#/entities/SiteSettings" },
+      "description": "Storefront CMS configuration and policy content."
+    },
+    "/orders/{orderId}": {
+      "schema": { "$ref": "#/entities/Order" },
+      "description": "Full customer order documents containing PII, restricted to owner or admin."
+    },
+    "/orderTracking/{trackingKey}": {
+      "schema": { "$ref": "#/entities/OrderTracking" },
+      "description": "Verification-gated non-PII order status lookup projection."
+    },
+    "/coupons/{couponId}": {
+      "schema": { "$ref": "#/entities/Coupon" },
+      "description": "Discount coupon codes; single-doc get allowed for validation, list restricted to admin."
+    },
+    "/services/{serviceId}": {
+      "schema": { "$ref": "#/entities/Service" },
+      "description": "Wellness consultation service modules."
+    },
+    "/appointments/{appointmentId}": {
+      "schema": { "$ref": "#/entities/Appointment" },
+      "description": "Consultation booking requests restricted to owner or admin."
+    },
+    "/reviews/{reviewId}": {
+      "schema": { "$ref": "#/entities/Review" },
+      "description": "Verified customer reviews moderated by admin."
+    },
+    "/journalPosts/{postId}": {
+      "schema": { "$ref": "#/entities/JournalPost" },
+      "description": "Educational health journal articles."
+    },
+    "/contactInquiries/{inquiryId}": {
+      "schema": { "$ref": "#/entities/ContactInquiry" },
+      "description": "Contact form submissions; create-only for visitors, read/manage for admin."
+    },
+    "/newsletterSubscribers/{subscriberId}": {
+      "schema": { "$ref": "#/entities/NewsletterSubscriber" },
+      "description": "Opt-in newsletter signups; create-only for visitors, read/manage for admin."
+    },
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserPublic" },
+      "description": "Non-PII customer display record."
+    },
+    "/users/{userId}/private/{docId}": {
+      "schema": { "$ref": "#/entities/UserPrivateProfile" },
+      "description": "Isolated PII profile, addresses, and wishlist."
+    },
+    "/admins/{userId}": {
+      "schema": { "$ref": "#/entities/AdminMember" },
+      "description": "Authorized administrator registry."
+    },
+    "/auditLogs/{logId}": {
+      "schema": { "$ref": "#/entities/AuditLog" },
+      "description": "Immutable admin audit log."
+    }
+  }
+}

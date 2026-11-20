@@ -1,0 +1,1208 @@
+# MASTER PROMPT — DR. ALI HASSAN HEALTH & WELLNESS
+
+## YOUR ROLE
+
+Act as a team of elite professionals:
+
+- Senior full-stack web application architect
+- Premium healthcare brand designer
+- Senior e-commerce website developer
+- UI/UX and conversion optimization specialist
+- Healthcare content and compliance specialist
+- Database and backend engineer
+- Cybersecurity engineer
+- Technical SEO, AEO, and GEO specialist
+- Quality assurance and accessibility engineer
+
+Build a complete, modern, professional, production-oriented health and wellness e-commerce website called:
+
+**Dr. Ali Hassan Health & Wellness**
+
+Reference website: https://draffanwellness.com/
+
+Use the reference website to understand its general business model, including supplement sales, wellness categories, product bundles, nutritionist guidance, shopping, and customer service.
+
+Our website must be more modern, organized, visually appealing, accessible, trustworthy, and easier to use.
+
+Do not copy the competitor's logos, images, product names, written content, design assets, or proprietary code.
+
+Create a completely original brand experience.
+
+---
+
+# 1. PROJECT VISION
+
+Build a premium health and wellness commerce platform that allows customers to:
+
+1. Discover health supplements.
+2. Browse products by wellness category.
+3. Read detailed ingredients, directions, and safety information.
+4. Compare products.
+5. Purchase products through a secure checkout.
+6. Track orders.
+7. Request wellness consultations where the services are actually available.
+8. Contact the business through WhatsApp.
+9. Read educational health articles.
+10. Manage orders and appointments through their accounts.
+
+Business region: Pakistan initially.
+
+Primary currency: Pakistani Rupees (PKR).
+
+Primary language: English.
+
+Secondary language: Urdu, with a scalable localization architecture.
+
+Future expansion: International markets, subject to applicable product, shipping, and healthcare regulations.
+
+Brand tagline proposal:
+
+**"Your Health. Our Commitment."**
+
+Secondary message:
+
+"Thoughtful wellness, supported by knowledge and care."
+
+Make all brand wording editable through the admin panel.
+
+---
+
+# 2. DESIGN DIRECTION
+
+Create an elegant, premium, modern healthcare and supplements shopping experience.
+
+Design inspiration:
+
+- Premium international wellness brands
+- Modern medical and nutrition websites
+- Clean pharmaceutical e-commerce interfaces
+- Minimalist, high-end Shopify stores
+- Professional healthcare appointment platforms
+
+### Brand colors
+
+Use this original color palette:
+
+- Deep Forest Green: #174D40
+- Sage Green: #8FAF98
+- Warm Ivory: #FAF8F2
+- Soft Mint: #E8F1EB
+- Champagne Gold: #C7A46A
+- Charcoal: #252B29
+- White: #FFFFFF
+
+Use dark green for major headings and CTAs, neutral backgrounds for clarity, and restrained gold accents for premium details.
+
+Typography:
+
+- Headings: Elegant, modern, highly readable font.
+- Body: Inter or similar accessible sans-serif.
+- Consistent typographic hierarchy.
+- Appropriate line heights and contrast.
+
+### Visual requirements
+
+- Sophisticated desktop design.
+- Exceptional mobile-first experience.
+- Sticky navigation.
+- Premium hero sections.
+- Elegant product cards.
+- Smooth transitions.
+- Tasteful micro-interactions.
+- Responsive grids.
+- Accessible dropdown menus.
+- Clear purchase buttons.
+- Functional search.
+- No unnecessary animations or clutter.
+
+Support reduced-motion preferences.
+
+Use original, licensed wellness lifestyle imagery showing natural ingredients, nutrition, and healthy living.
+
+Do not invent images of Dr. Ali Hassan. Provide an admin upload area for authentic, approved doctor photos.
+
+Do not generate fictional supplement packaging that could be mistaken for a real product being sold.
+
+Use real product photographs uploaded by administrators.
+
+---
+
+# 3. WEBSITE NAVIGATION
+
+Create the following navigation:
+
+**HOME | SHOP | CATEGORIES | WELLNESS SERVICES | ABOUT US | HEALTH JOURNAL | CONTACT**
+
+Header must also contain:
+
+- Brand logo
+- Product search
+- Customer account
+- Shopping cart
+- Wishlist
+- Language selector
+- WhatsApp contact
+- Mobile navigation menu
+
+Include Shop dropdown categories.
+
+### Main shopping categories
+
+Create editable starter category records:
+
+1. Multivitamins & Minerals
+2. Men's Wellness
+3. Women's Wellness
+4. Digestive Wellness
+5. Gut & Liver Support
+6. Hair, Skin & Beauty
+7. Bone & Joint Support
+8. Sleep & Relaxation
+9. General Nutrition
+10. Healthy Lifestyle Products
+11. Wellness Bundles
+12. New Arrivals
+13. Best Sellers
+
+These are category suggestions, not confirmed products or health claims.
+
+Allow the admin to add, rename, hide, reorder, and delete categories.
+
+---
+
+# 4. HOMEPAGE — PREMIUM DESIGN
+
+Build the homepage with the following sections.
+
+### Section A — Announcement bar
+
+Show configurable announcements such as shipping notices, special offers, and customer-service availability.
+
+Do not display invented discounts or false limited-time offers.
+
+### Section B — Premium hero
+
+Create a high-end, visually striking hero section.
+
+Headline:
+
+**"A Better Way to Care for Your Everyday Wellness."**
+
+Subheading:
+
+"Explore thoughtfully selected wellness products, transparent product information, and professional guidance from the Dr. Ali Hassan Health & Wellness team."
+
+Buttons:
+
+- Shop Supplements
+- Explore Our Services
+
+Hero must feature authentic product images when available, natural wellness styling, and elegant responsive composition.
+
+### Section C — Shop by wellness goal
+
+Display visually attractive category tiles.
+
+Each tile should include:
+
+- Category image
+- Category title
+- Short explanation
+- Explore button
+
+### Section D — Best sellers
+
+Create a product carousel or responsive grid.
+
+Each product card must include:
+
+- Product image
+- Product title
+- Price in PKR
+- Original price when a genuine sale exists
+- Verified reviews and ratings where available
+- Availability status
+- Wishlist button
+- Add to Cart
+- Quick View
+
+### Section E — Meet Dr. Ali Hassan
+
+Create an elegant founder section.
+
+Include:
+
+- Authentic portrait placeholder requiring admin upload
+- Name
+- Verified professional qualifications
+- Verified specialization
+- Professional biography
+- Business mission
+- Learn More button
+
+Do not invent professional credentials, registration numbers, clinical achievements, or years of experience.
+
+### Section F — Featured wellness collections
+
+Show relevant products grouped into collections.
+
+### Section G — Product quality and transparency
+
+Create an informative section explaining how customers can inspect:
+
+- Ingredients
+- Product origin
+- Manufacturing details
+- Directions
+- Safety warnings
+- Quality documentation
+- Regulatory information
+
+Display certification badges only when uploaded evidence has been verified.
+
+### Section H — Wellness services
+
+Create attractive service cards with appointment-request options.
+
+Service availability must be configurable.
+
+### Section I — Wellness bundles
+
+Promote genuine product bundles with transparent savings.
+
+### Section J — Customer reviews
+
+Display authentic approved reviews from real customers.
+
+Do not generate fake reviews, sales counts, testimonials, or star ratings.
+
+### Section K — Health journal
+
+Display the latest medically reviewed educational articles.
+
+### Section L — Newsletter
+
+Allow users to subscribe to marketing updates through explicit consent.
+
+### Section M — Footer
+
+Include:
+
+- About Us
+- Shop
+- Services
+- Contact
+- FAQ
+- Shipping Policy
+- Refund & Returns Policy
+- Privacy Policy
+- Terms and Conditions
+- Supplement Safety Information
+- Social links
+- WhatsApp
+- Newsletter
+- Copyright
+
+All footer content must be editable.
+
+---
+
+# 5. COMPLETE PRODUCT CATALOG SYSTEM
+
+Develop an advanced e-commerce catalog.
+
+### Shop page
+
+Include:
+
+- Category filters
+- Price range
+- Brand filter
+- Ingredient filter where appropriate
+- Availability filter
+- Keyword search
+- Sort by relevance
+- Sort by price
+- Sort by newest
+- Pagination or efficient incremental loading
+
+### Product details page
+
+Every product page must include:
+
+1. Product name.
+2. High-resolution product images.
+3. Product image gallery and zoom.
+4. Selling price in PKR.
+5. Original price if applicable.
+6. Stock availability.
+7. Quantity selector.
+8. Add to Cart.
+9. Buy Now.
+10. Wishlist.
+11. Product overview.
+12. Complete ingredient information.
+13. Supplement facts or composition label.
+14. Serving size and directions exactly as approved.
+15. Safety warnings.
+16. Allergens.
+17. Potential interactions or contraindications when documented.
+18. Storage instructions.
+19. Manufacturer or importer.
+20. Country of origin.
+21. Applicable registration or enlistment details.
+22. Batch and expiry tracking where appropriate.
+23. Shipping details.
+24. Return eligibility.
+25. Authentic customer reviews.
+26. Related products.
+27. Frequently asked questions.
+28. Contact a qualified professional option.
+
+Do not create unsupported medicinal claims.
+
+Do not describe a supplement as treating, curing, or preventing a disease unless the claim is legally permitted and properly supported.
+
+Admin must be able to upload genuine labels, documents, and authorized ingredient information.
+
+### Product variants
+
+Support multiple pack sizes and formulations.
+
+Each variant may have a different SKU, stock quantity, price, weight, or image.
+
+---
+
+# 6. HEALTH & WELLNESS SERVICES PLATFORM
+
+Create a dedicated `/services` section.
+
+The following are suggested service modules, not confirmed offerings.
+
+All modules must be disabled until enabled by the administrator and assigned to a suitably qualified provider.
+
+Potential modules:
+
+**Nutrition Consultation**
+
+Explain the consultation, display provider qualifications, duration, fee, and appointment availability.
+
+**Lifestyle & Wellness Guidance**
+
+Provide general wellbeing consultation booking where a qualified professional is available.
+
+**Supplement Information Consultation**
+
+Allow customers to ask about documented ingredients, usage warnings, and whether they should seek individual medical advice.
+
+**Follow-Up Wellness Appointment**
+
+For returning consultation customers when a legitimate follow-up service is available.
+
+**Other Professional Services**
+
+Admin can add new service types with complete control over service names, descriptions, duration, prices, provider, and availability.
+
+### Service booking engine
+
+Build a fully functional appointment system.
+
+Features:
+
+- Service selection
+- Provider selection
+- Date picker
+- Available appointment slots
+- Pakistan time zone handling
+- Appointment duration
+- Customer contact details
+- Booking confirmation
+- Optional verified online payment
+- Secure booking reference
+- Rescheduling request
+- Cancellation request
+- Email notifications
+- Admin calendar
+- Provider availability management
+- Prevention of double booking
+
+Consultations should initially collect only necessary contact and scheduling information.
+
+Do not request diagnoses or detailed medical histories without a legitimate clinical workflow, privacy controls, and appropriate consent.
+
+Where video consultation is enabled, integrate an authorized secure video service.
+
+Do not display appointments as confirmed until the server validates availability and saves the booking.
+
+---
+
+# 7. SHOPPING CART & CHECKOUT
+
+Build a secure, convenient, real shopping experience.
+
+### Shopping cart
+
+Features:
+
+- Add and remove products.
+- Update quantities.
+- Calculate subtotal.
+- Apply valid coupon codes.
+- Show delivery charges.
+- Show final total.
+- Save cart for returning users when possible.
+- Show genuine stock limits.
+- Prevent purchase of unavailable products.
+
+### Checkout
+
+Create a responsive checkout flow.
+
+Required fields:
+
+- Full name
+- Email
+- Pakistani mobile phone number
+- Shipping address
+- City
+- Province/region
+- Postal code when available
+- Delivery instructions (optional)
+- Payment method
+
+Support guest checkout.
+
+### Payment options
+
+Prepare integration for:
+
+1. Cash on Delivery (COD)
+2. JazzCash through approved merchant integration
+3. Easypaisa through approved merchant integration
+4. Authorized card payments through a compatible PCI-compliant gateway
+
+Make payment methods admin configurable.
+
+Only activate a payment method when valid merchant credentials and working backend integrations are provided.
+
+Never fake a successful card payment.
+
+Use trusted hosted checkout or gateway tokenization. Do not collect or store raw card numbers or CVVs.
+
+### Order confirmation
+
+After a validated order:
+
+- Generate an order reference.
+- Save the order to the database.
+- Save a server-validated price snapshot.
+- Update inventory transactionally.
+- Send confirmation using a configured email service.
+- Show order summary.
+- Provide a tracking page.
+
+For online payments, verify provider-signed webhooks before marking orders paid.
+
+For COD, use a separate payment-pending status.
+
+---
+
+# 8. ORDER TRACKING
+
+Create a customer-facing order-tracking page.
+
+Support statuses such as:
+
+- Order Placed
+- Confirmed
+- Processing
+- Packed
+- Shipped
+- Out for Delivery
+- Delivered
+- Cancelled
+- Return Requested
+- Returned
+
+Admin must be able to update fulfillment statuses.
+
+Support authorized courier integrations when credentials are available.
+
+Do not display simulated tracking activity as real shipping progress.
+
+Guest tracking must require an order identifier plus an additional verification factor, such as a verified email or phone OTP, to protect personal information.
+
+---
+
+# 9. COMPLETE ADMIN DASHBOARD
+
+Create a secure admin portal at `/admin`.
+
+All major website content and business settings should be controllable from this panel.
+
+### Dashboard overview
+
+Show:
+
+- Revenue from valid orders
+- Total orders
+- Pending orders
+- Completed orders
+- Low-stock alerts
+- Active products
+- Customers
+- Appointment requests
+- Pending refunds
+- Best-selling products
+- Sales charts
+- Traffic metrics when analytics integration is connected
+
+Use real database queries.
+
+Never display invented business data as live performance.
+
+### Product management
+
+Admin can:
+
+- Add products
+- Edit products
+- Delete or archive products
+- Upload multiple images
+- Manage product categories
+- Edit pricing
+- Set real discounts
+- Manage inventory
+- Manage variants
+- Add ingredients
+- Add directions and warnings
+- Add verified certifications
+- Control featured products
+- Import or export product data
+
+### Order management
+
+Admin can:
+
+- View orders
+- Search orders
+- Filter by status
+- Change fulfillment status
+- Add tracking information
+- Manage COD orders
+- Review payments
+- Approve eligible cancellations and refunds
+- Generate packing slips
+- Export reports
+
+### Appointments management
+
+Admin can:
+
+- View appointment requests
+- Confirm appointments
+- Manage schedules
+- Add qualified providers
+- Set service fees
+- Reschedule or cancel appointments
+- Manage consultation statuses
+
+### Website content management
+
+Admin must be able to update:
+
+- Logo
+- Website title
+- Tagline
+- Colors
+- Homepage banners
+- Hero images
+- Homepage sections
+- Product collections
+- Page content
+- Blog articles
+- FAQs
+- Contact information
+- WhatsApp number
+- Social links
+- Shipping notices
+- SEO metadata
+
+### Marketing management
+
+Admin can manage:
+
+- Coupon codes
+- Promotions
+- Promotional banners
+- Newsletter campaigns
+- Abandoned-cart consent-based reminders
+- Featured products
+- Bundle offers
+- Discount scheduling
+
+### Additional admin modules
+
+Include:
+
+- User roles
+- Review moderation
+- Customer support inquiries
+- Inventory alerts
+- Audit logs
+- Analytics settings
+- Integration settings
+- Backup and export tools
+- Policy publishing
+- Medical content approval workflow
+
+Include a super-admin role and granular permissions.
+
+---
+
+# 10. ADMIN SECURITY
+
+Use real authentication and authorization.
+
+Requirements:
+
+- Server-verified login
+- Secure password hashing through a managed authentication provider
+- Admin email allowlist
+- MFA for privileged accounts
+- Role-based access control
+- Protected backend routes
+- Secure session management
+- CSRF protections where applicable
+- Rate limiting
+- Input validation
+- Secure file uploads
+- Audit trails
+- Encrypted transport
+- Environment-based secret management
+
+Never put private API keys in browser code.
+
+Do not rely on hidden frontend buttons for authorization.
+
+Unauthorized users must not read admin data through direct API calls.
+
+Apply database-level access policies, including row-level security where supported.
+
+---
+
+# 11. CUSTOMER ACCOUNT
+
+Create a customer account section featuring:
+
+- Login and signup
+- Email verification
+- Password recovery
+- Account profile
+- Address book
+- Order history
+- Order tracking
+- Wishlist
+- Appointment history
+- Notification preferences
+- Personal data access/deletion requests
+
+Do not expose private appointment or customer information to other users.
+
+---
+
+# 12. AI WELLNESS SHOPPING ASSISTANT
+
+Add an optional AI-powered product-information assistant.
+
+Use Gemini through a secure server-side API integration if configured.
+
+The assistant may:
+
+- Explain website navigation.
+- Help locate products.
+- Compare factual product details.
+- Answer shipping questions.
+- Explain listed ingredients using approved information.
+- Direct customers to qualified healthcare professionals.
+- Help customers contact support.
+
+Important restrictions:
+
+- Do not diagnose diseases.
+- Do not prescribe treatments.
+- Do not create individualized supplement doses.
+- Do not provide unsupported guarantees.
+- Do not claim that supplements replace prescribed medications.
+- Do not invent unavailable products.
+- Do not make unsupported medical recommendations.
+
+Use approved product records and a medically reviewed knowledge base, rather than relying on the model's memory.
+
+Display an appropriate medical information disclaimer.
+
+Do not send sensitive customer health information to an AI provider without appropriate disclosure, consent, and safeguards.
+
+If the Gemini API is not connected, keep the assistant disabled rather than pretending it is operational.
+
+---
+
+# 13. HEALTH JOURNAL & EDUCATIONAL CONTENT
+
+Create a professional health blog.
+
+Blog categories:
+
+- Nutrition Fundamentals
+- Supplement Education
+- Healthy Lifestyle
+- Digestive Wellness
+- Men's General Wellness
+- Women's General Wellness
+- Sleep and Recovery
+- Healthy Aging
+- Ingredient Guides
+- Product Safety
+
+Each article must contain:
+
+- Title
+- Summary
+- Author
+- Author credentials where verified
+- Medical reviewer where applicable
+- Publication date
+- Last reviewed date
+- Supporting references
+- Relevant educational images
+- Related articles
+- Disclaimer
+
+Do not create fake medical authors or fabricate scientific references.
+
+Support draft, review, approval, and publishing workflows in the admin dashboard.
+
+---
+
+# 14. SEO, AEO & GEO OPTIMIZATION
+
+Implement professional search-engine optimization from the beginning.
+
+### Technical SEO
+
+- Server-rendered or statically generated public pages.
+- Clean semantic HTML.
+- Unique title tags.
+- Unique meta descriptions.
+- Canonical URLs.
+- XML sitemap.
+- Robots.txt.
+- Open Graph metadata.
+- Responsive images.
+- Accessible navigation.
+- Breadcrumbs.
+- Descriptive URLs.
+- Helpful internal linking.
+- No indexation of private account and checkout pages.
+
+### Structured data
+
+Implement valid structured data as appropriate:
+
+- Organization
+- WebSite
+- BreadcrumbList
+- Product
+- Offer
+- MerchantReturnPolicy
+- OfferShippingDetails
+- Article
+- Person for verified professionals
+- Service for genuinely available services
+
+Only add ratings and review structured data when based on eligible, genuine customer reviews.
+
+Keep product price, availability, and shipping data consistent between page content and structured data.
+
+### Content SEO
+
+Create useful landing pages for real categories and products.
+
+Focus on search intent such as:
+
+- Supplements in Pakistan
+- Multivitamins in Pakistan
+- Wellness products online
+- Nutrition consultation
+- Product-specific ingredient information
+
+Treat these as preliminary topic ideas, not verified keyword-volume claims.
+
+Research and validate keywords before publishing optimized pages.
+
+### AEO & GEO
+
+Use:
+
+- Clear answers to real user questions
+- Descriptive headings
+- FAQ sections that help users
+- Accurate organization information
+- Verified author profiles
+- References and updated article dates
+- Consistent business identity
+- Accessible, indexable product information
+
+Do not guarantee Google rankings, featured snippets, AI citations, or search traffic.
+
+---
+
+# 15. HEALTHCARE COMPLIANCE & TRUST
+
+This is a health-related business.
+
+Prioritize accuracy, customer safety, and lawful marketing.
+
+For Pakistan, account for applicable Drug Regulatory Authority of Pakistan requirements, including the Alternative Medicines and Health Products Rules, 2026, and current advertising requirements.
+
+Before publishing a supplement:
+
+- Require verified product identification and relevant regulatory status.
+- Require genuine ingredient and composition information.
+- Require approved labeling and warnings.
+- Confirm any claimed certification.
+- Require administrator review and publication approval.
+- Keep documentation of health claims.
+- Do not claim disease treatment or cures without applicable authorization.
+- Never invent safety guarantees.
+- Clearly distinguish supplements from medicines.
+- Include appropriate disclaimers and referral advice.
+
+Include a configurable compliance review status for products:
+
+- Draft
+- Awaiting Documentation
+- Under Review
+- Approved for Publication
+- Archived
+
+Only authorized staff should be able to publish reviewed products.
+
+Make legal and safety text editable through the CMS, but require appropriate approval for changes.
+
+---
+
+# 16. POLICIES & CUSTOMER TRANSPARENCY
+
+Create these pages:
+
+- Privacy Policy
+- Terms and Conditions
+- Shipping Policy
+- Refund Policy
+- Return and Exchange Policy
+- Cancellation Policy
+- Supplement Disclaimer
+- Consultation Terms
+- Cookie and Analytics Preferences
+- Contact Information
+- FAQ
+
+Use clearly marked business-specific placeholders where details have not yet been supplied.
+
+Do not invent a physical address, company registration, government authorization, or return promises.
+
+Ensure policy terms are consistent across product pages, checkout, and dedicated policy pages.
+
+---
+
+# 17. WHATSAPP & CUSTOMER SUPPORT
+
+Build a floating WhatsApp contact button.
+
+Admin can configure:
+
+- Business number
+- Greeting
+- Business hours
+- Support email
+- FAQ content
+- Available support channels
+
+Create an intelligent WhatsApp click-to-chat feature that pre-fills non-sensitive product queries.
+
+Do not automatically share customer information without user action.
+
+Provide a contact form that validates input and stores submissions securely.
+
+Add spam protection and rate limiting.
+
+---
+
+# 18. DATABASE ARCHITECTURE
+
+Preferred stack:
+
+- Next.js with TypeScript
+- Tailwind CSS
+- Accessible reusable UI components
+- Supabase PostgreSQL
+- Supabase Authentication
+- Secure object storage
+- Server-side API routes/actions
+- Zod or equivalent validation
+- Reliable transactional order management
+
+Create a normalized database model for:
+
+1. Users
+2. Roles and permissions
+3. Customer profiles
+4. Addresses
+5. Products
+6. Product variants
+7. Categories
+8. Product images
+9. Inventory
+10. Inventory movements
+11. Product compliance documents
+12. Carts
+13. Cart items
+14. Orders
+15. Order items
+16. Payments
+17. Payment events
+18. Shipping records
+19. Coupons
+20. Bundles
+21. Reviews
+22. Wishlists
+23. Services
+24. Qualified providers
+25. Provider availability
+26. Appointments
+27. Contact submissions
+28. Blog posts
+29. Pages and site settings
+30. Audit logs
+31. Email subscriptions
+
+Generate database migrations, relationships, indexes, constraints, and access policies.
+
+Use server-side transactions and idempotent payment/order logic.
+
+Protect against duplicate purchases, webhook replays, stock overselling, and unauthorized updates.
+
+---
+
+# 19. PERFORMANCE & ACCESSIBILITY
+
+The site must be fast, responsive, and accessible.
+
+Priorities:
+
+- Optimized images
+- Lazy loading below the fold
+- Minimized JavaScript
+- Appropriate caching
+- Font optimization
+- Code splitting
+- Core Web Vitals monitoring
+- Secure HTTPS hosting
+- Mobile usability
+- Keyboard accessibility
+- Visible focus indicators
+- WCAG 2.2 AA-oriented implementation
+
+Performance objectives:
+
+- LCP at or below 2.5 seconds
+- INP at or below 200 milliseconds
+- CLS at or below 0.1
+
+Treat these as performance goals to validate on real devices and hosting, not guaranteed outcomes.
+
+---
+
+# 20. ANALYTICS & CONVERSION TRACKING
+
+Prepare optional integrations for:
+
+- Google Analytics 4
+- Google Search Console
+- Google Merchant Center
+- Meta Pixel
+- Google Ads conversion tracking
+
+Use consent-aware integrations where required.
+
+Track relevant e-commerce events:
+
+- view_item
+- view_item_list
+- add_to_cart
+- begin_checkout
+- purchase
+- search
+- generate_lead
+- appointment_request
+
+Do not count unpaid or failed checkouts as completed purchases.
+
+Avoid sending sensitive health information or personal identifiers to analytics and advertising platforms.
+
+---
+
+# 21. ADDITIONAL PREMIUM FEATURES
+
+Implement or prepare extensible architecture for:
+
+- Product comparison
+- Wishlist
+- Back-in-stock alerts
+- Bundles
+- Verified product reviews
+- Subscription or repeat purchase options where legally and operationally appropriate
+- Loyalty program
+- Gift cards
+- Discount engine
+- Customer referral program
+- Email marketing integrations
+- Inventory reporting
+- Mobile-friendly order management
+- Multi-location inventory in the future
+
+Each feature must have real data handling and correct business logic.
+
+Keep optional features disabled until configured.
+
+---
+
+# 22. REQUIRED DEVELOPMENT QUALITY
+
+Do not build only a static landing page.
+
+Do not deliver a nonfunctional visual mockup and call it a completed website.
+
+Implement a real multi-page web application.
+
+All visible links and buttons must navigate or perform their expected action.
+
+All submitted forms must validate inputs and save successfully to a real backend when configured.
+
+Do not use fake data as real production data.
+
+If sample records are needed for development, clearly label them as demo records and keep them out of production.
+
+Use an organized project structure with reusable components and maintainable code.
+
+Handle loading, empty, error, success, and permission-denied states.
+
+Provide clear setup instructions for missing credentials.
+
+Never claim an external service is connected without testing it.
+
+---
+
+# 23. BUILD SEQUENCE
+
+Implement the project in a logical order.
+
+**Phase 1 — Brand and storefront**
+
+Build the layout, navigation, homepage, responsive shop, category pages, product pages, About page, and Contact page.
+
+**Phase 2 — Database and commerce**
+
+Implement authentication, catalog management, cart, checkout, orders, inventory, shipping, and COD workflow.
+
+**Phase 3 — Admin dashboard**
+
+Build protected product management, customer management, orders, inventory, content management, and permissions.
+
+**Phase 4 — Wellness services**
+
+Build services, providers, appointment requests, availability, booking management, and notifications.
+
+**Phase 5 — Advanced integrations**
+
+Add authorized online payments, WhatsApp, transactional email, analytics, and AI assistance where configured.
+
+**Phase 6 — Quality and launch preparation**
+
+Complete SEO, security review, mobile testing, accessibility testing, policy review, and deployment setup.
+
+---
+
+# 24. ACCEPTANCE TESTS
+
+Before calling the application complete, test:
+
+- Homepage loads on desktop and mobile.
+- Navigation works.
+- Product search and filters work.
+- Product images load correctly.
+- Cart quantities and totals calculate correctly.
+- Expired or invalid discounts are rejected.
+- COD order is persisted correctly.
+- Invalid online payments do not mark an order paid.
+- Payment webhooks reject invalid signatures.
+- Inventory does not go below zero through concurrent checkout.
+- Customer orders remain private.
+- Guest order tracking requires verification.
+- Admin cannot be accessed by regular users.
+- Appointment booking rejects occupied slots.
+- Product compliance status controls publication.
+- Contact submissions work.
+- Public pages contain proper metadata.
+- Mobile layouts have no horizontal overflow.
+- Production pages contain no fake doctors, reviews, certifications, or health claims.
+
+Report tested features separately from features awaiting external accounts, credentials, or business approvals.
+
+---
+
+# 25. FINAL DELIVERY REQUIREMENTS
+
+Generate:
+
+1. Complete responsive frontend.
+2. Real backend architecture and implementation.
+3. Database schema and migrations.
+4. Authentication and role-based authorization.
+5. Complete e-commerce functionality.
+6. Functional COD workflow.
+7. Integration-ready online payment adapters.
+8. Service and appointment module.
+9. Full admin dashboard.
+10. Customer account area.
+11. SEO implementation.
+12. Security controls.
+13. Environment variable template.
+14. Deployment instructions.
+15. Testing checklist.
+16. Administrator documentation.
+
+Use a clean, scalable architecture.
+
+Provide a professional first-time admin onboarding flow that does not expose default passwords.
+
+Prepare deployment instructions for a compatible hosting platform, including Cloudflare Workers where technically supported or an alternative compatible host.
+
+Do not claim the site is deployed until an actual deployment is completed and verified.
+
+## FINAL INSTRUCTION
+
+**START BUILDING THE WEBSITE NOW.**
+
+Begin with a premium, fully responsive homepage and reusable design system, then implement the real shopping and administration architecture.
+
+Preserve the complete project context across development steps.
+
+Our final objective is to launch:
+
+**DR. ALI HASSAN HEALTH & WELLNESS**
+
+A premium, original, trustworthy health and supplements business website with a seamless shopping experience, verified wellness services, and complete administrative control.
+
+Deliver a real, maintainable business application, not just a visual concept.
