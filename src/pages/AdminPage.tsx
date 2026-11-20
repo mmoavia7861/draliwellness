@@ -383,13 +383,18 @@ export const AdminPage: React.FC = () => {
             <button
               type="button"
               onClick={async () => {
-                await seedLaunchCatalog();
-                notify('Launch catalog synced to Firestore.');
+                setLoadError('');
+                try {
+                  await seedLaunchCatalog();
+                  notify('Missing defaults initialized. Existing prices, stock and content were preserved.');
+                } catch (err) {
+                  setLoadError(err instanceof Error ? err.message : 'Catalog initialization failed.');
+                }
               }}
               className="h-10 px-4 rounded-lg border border-[#174D40]/25 bg-white text-xs font-semibold text-[#174D40] inline-flex items-center gap-1.5 hover:bg-[#E8F1EB] cursor-pointer"
             >
               <Database className="w-4 h-4" />
-              <span>{firestoreSeeded ? 'Re-sync Launch Defaults' : 'Initialize Firestore Seed'}</span>
+              <span>{firestoreSeeded ? 'Check Missing Defaults' : 'Initialize Missing Defaults'}</span>
             </button>
             <button
               type="button"
