@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { LogOut, MapPin, Package, Plus, Trash2, User } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 import { PageMeta } from '../components/PageMeta';
+import { getEmailAuthError } from '../utils/authErrors';
 import { ProductCard } from '../components/ProductCard';
 import type { Appointment, Order, SavedAddress } from '../types';
 import { formatPkr, getOrderStatusLabel } from '../utils/commerce';
@@ -12,7 +13,10 @@ export const AccountPage: React.FC = () => {
     user,
     authReady,
     isAdmin,
-    signInWithGoogle,
+    signInWithEmail,
+    registerWithEmail,
+    resetPassword,
+    resendVerificationEmail,
     logout,
     userProfile,
     saveUserProfile,
@@ -35,6 +39,12 @@ export const AccountPage: React.FC = () => {
 
   const [phoneInput, setPhoneInput] = useState(userProfile?.phone ?? '');
   const [profileSavedMsg, setProfileSavedMsg] = useState('');
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authBusy, setAuthBusy] = useState(false);
+  const [authError, setAuthError] = useState('');
+  const [authInfo, setAuthInfo] = useState('');
 
   const [newAddr, setNewAddr] = useState<Omit<SavedAddress, 'id'>>({
     label: 'Home',
@@ -63,10 +73,66 @@ export const AccountPage: React.FC = () => {
   };
 
   useEffect(() => {
-    if (user) {
+    if (user?.emailVerified) {
       void loadAccountData();
     }
   }, [user]);
+
+  const submitAccountAuth = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setAuthError('');
+    setAuthInfo('');
+    if (authMode === 'register' && authPassword.length < 8) {
+      setAuthError('Use a password of at least 8 characters.');
+      return;
+    }
+    setAuthBusy(true);
+    try {
+      if (authMode === 'register') {
+        await registerWithEmail(authEmail, authPassword);
+        setAuthInfo('Account created. Check your inbox for the verification link.');
+      } else {
+        await signInWithEmail(authEmail, authPassword);
+      }
+      setAuthPassword('');
+    } catch (err) {
+      setAuthError(getEmailAuthError(err));
+    } finally {
+      setAuthBusy(false);
+    }
+  };
+
+  const requestAccountReset = async () => {
+    setAuthError('');
+    setAuthInfo('');
+    if (!authEmail.trim()) {
+      setAuthError('Enter your account email first.');
+      return;
+    }
+    setAuthBusy(true);
+    try {
+      await resetPassword(authEmail);
+      setAuthInfo('If this account exists, a password reset email has been sent.');
+    } catch (err) {
+      setAuthError(getEmailAuthError(err));
+    } finally {
+      setAuthBusy(false);
+    }
+  };
+
+  const requestAccountVerification = async () => {
+    setAuthError('');
+    setAuthInfo('');
+    setAuthBusy(true);
+    try {
+      await resendVerificationEmail();
+      setAuthInfo('Verification email requested. Follow the link and sign out / sign in again.');
+    } catch (err) {
+      setAuthError(getEmailAuthError(err));
+    } finally {
+      setAuthBusy(false);
+    }
+  };
 
   const wishlistProducts = liveProducts.filter((p) => wishlistIds.includes(p.id));
 
@@ -95,17 +161,54 @@ export const AccountPage: React.FC = () => {
                 Customer Account
               </h1>
               <p className="text-sm text-[#252B29]/75">
-                Sign in with Google to view your order history, manage delivery addresses, and sync your wishlist.
+                Sign in with an email address and a dedicated website password to manage your orders, addresses and wishlist.
               </p>
             </div>
-
-            <button
-              type="button"
-              onClick={() => void signInWithGoogle()}
-              className="w-full h-11 rounded-lg bg-[#174D40] text-white text-sm font-semibold hover:bg-[#113A30] transition-colors cursor-pointer"
-            >
-              Continue with Google
-            </button>
+            {authError && (
+              <p role="alert" className="text-sm text-red-800 bg-red-50 border border-red-200 rounded-lg p-3">
+                {authError}
+              </p>
+            )}
+            {authInfo && (
+              <p role="status" className="text-sm text-[#174D40] bg-[#E8F1EB] rounded-lg p-3">
+                {authInfo}
+              </p>
+            )}
+            <form onSubmit={(e) => void submitAccountAuth(e)} className="w-full text-left space-y-3">
+              <div className="space-y-1">
+                <label htmlFor="customer-email" className="text-xs font-semibold text-[#174D40]">Email / Gmail</label>
+                <input
+                  id="customer-email" type="email" required autoComplete="email"
+                  value={authEmail} onChange={(e) => setAuthEmail(e.target.value)}
+                  className="w-full h-11 px-3 rounded-lg border border-[#174D40]/25 bg-white text-sm"
+                  placeholder="you@gmail.com"
+                />
+              </div>
+              <div className="space-y-1">
+                <label htmlFor="customer-password" className="text-xs font-semibold text-[#174D40]">Password</label>
+                <input
+                  id="customer-password" type="password" required
+                  autoComplete={authMode === 'register' ? 'new-password' : 'current-password'}
+                  minLength={authMode === 'register' ? 8 : undefined}
+                  value={authPassword} onChange={(e) => setAuthPassword(e.target.value)}
+                  className="w-full h-11 px-3 rounded-lg border border-[#174D40]/25 bg-white text-sm"
+                  placeholder={authMode === 'register' ? 'At least 8 characters' : 'Website account password'}
+                />
+              </div>
+              <button type="submit" disabled={authBusy}
+                className="w-full h-11 rounded-lg bg-[#174D40] text-white text-sm font-semibold disabled:opacity-60">
+                {authBusy ? 'Working...' : authMode === 'register' ? 'Create Account' : 'Sign In'}
+              </button>
+            </form>
+            <div className="w-full flex items-center justify-between gap-2 text-xs text-[#174D40]">
+              <button type="button" disabled={authBusy}
+                onClick={() => { setAuthError(''); setAuthInfo(''); setAuthMode(authMode === 'login' ? 'register' : 'login'); }}
+                className="underline">
+                {authMode === 'login' ? 'Create a customer account' : 'Already have an account? Sign in'}
+              </button>
+              <button type="button" disabled={authBusy} onClick={() => void requestAccountReset()}
+                className="underline">Forgot password?</button>
+            </div>
 
             <p className="text-xs text-[#252B29]/60">
               Placed an order as a guest? You can track it anytime on{' '}
@@ -114,6 +217,31 @@ export const AccountPage: React.FC = () => {
               </Link>
               .
             </p>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  if (!user.emailVerified) {
+    return (
+      <>
+        <PageMeta title="Verify Email — Dr. Ali Hassan Health & Wellness" description="Verify your email to access account features." />
+        <div className="max-w-lg mx-auto px-4 py-16">
+          <div className="bg-white border border-[#174D40]/15 rounded-2xl p-8 text-center space-y-4">
+            <h1 className="font-serif text-3xl text-[#174D40]">Verify your email</h1>
+            <p className="text-sm text-[#252B29]/75">
+              Check your inbox for {user.email}. After clicking the verification link, sign out and sign in again.
+            </p>
+            {authError && <p role="alert" className="text-sm text-red-800">{authError}</p>}
+            {authInfo && <p role="status" className="text-sm text-[#174D40]">{authInfo}</p>}
+            <button type="button" disabled={authBusy} onClick={() => void requestAccountVerification()}
+              className="w-full h-11 bg-[#174D40] text-white rounded-lg disabled:opacity-60">
+              {authBusy ? 'Sending...' : 'Resend Verification Email'}
+            </button>
+            <button type="button" onClick={() => void logout()}
+              className="w-full h-11 border border-[#174D40]/25 rounded-lg text-[#174D40]">Sign Out</button>
+            <Link to="/track-order" className="block text-sm text-[#174D40] underline">Track a guest order</Link>
           </div>
         </div>
       </>
