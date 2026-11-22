@@ -132,6 +132,13 @@ test('checkoutSchema validates required Pakistani checkout fields and rejects in
     paymentMethod: 'cod',
   });
   assert.equal(valid.success, true);
+  // Easypaisa/JazzCash are pending manual-transfer methods, not automatic
+  // gateway authorization or proof that payment was received.
+  for (const wallet of ['easypaisa', 'jazzcash']) {
+    assert.equal(checkoutSchema.safeParse({
+      ...valid.data, paymentMethod: wallet,
+    }).success, true);
+  }
 });
 
 test('computeTrackingKey produces deterministic case-insensitive verification hashes', async () => {

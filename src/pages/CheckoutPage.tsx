@@ -7,6 +7,10 @@ import type { Order } from '../types';
 import { calculateCartTotals, checkoutSchema, formatPkr } from '../utils/commerce';
 
 const PAYMENT_API_BASE = (import.meta.env.VITE_PAYMENT_API_BASE_URL || 'https://draliwellness.moavia400.workers.dev').replace(/\/$/, '');
+// Merchant-provided receiving number. Both wallets must be verified by owner before collecting payment.
+const WALLET_RECEIVING_NUMBER = '03486287055';
+const isManualWallet = (value: string) => value === 'easypaisa' || value === 'jazzcash';
+const walletLabel = (value: string) => value === 'easypaisa' ? 'Easypaisa' : 'JazzCash';
 
 export const CheckoutPage: React.FC = () => {
   const { cart, siteSettings, appliedCoupon, user, userProfile, placeOrder } = useStore();
@@ -25,7 +29,7 @@ export const CheckoutPage: React.FC = () => {
   const [province, setProvince] = useState(savedAddr?.province || '');
   const [postalCode, setPostalCode] = useState(savedAddr?.postalCode || '');
   const [notes, setNotes] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'whatsapp' | 'safepay'>('cod');
+  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'whatsapp' | 'easypaisa' | 'jazzcash' | 'safepay'>('cod');
   const [safepayAvailable, setSafepayAvailable] = useState(false);
   const [safepayEnvironment, setSafepayEnvironment] = useState<'sandbox' | 'production'>('sandbox');
   const pendingSafepayOrder = useRef<Order | null>(null);
@@ -136,7 +140,7 @@ export const CheckoutPage: React.FC = () => {
     const waSummary = encodeURIComponent(
       `Order ${confirmedOrder.orderNumber} placed for ${confirmedOrder.customerName} (${formatPkr(
         confirmedOrder.totalPkr
-      )}).`
+      )}). Payment method: ${isManualWallet(confirmedOrder.paymentMethod) ? walletLabel(confirmedOrder.paymentMethod) + ' transfer' : confirmedOrder.paymentMethod}. Payment pending; please verify the transfer against the wallet transaction reference.`
     );
 
     return (
@@ -170,7 +174,11 @@ export const CheckoutPage: React.FC = () => {
               <span className="font-semibold">
                 {confirmedOrder.paymentMethod === 'cod'
                   ? 'Cash on Delivery (Payment Pending)'
-                  : 'WhatsApp Order Confirmation'}
+                  : confirmedOrder.paymentMethod === 'whatsapp'
+                    ? 'WhatsApp Order Confirmation'
+                    : isManualWallet(confirmedOrder.paymentMethod)
+                      ? walletLabel(confirmedOrder.paymentMethod) + ' Manual Transfer (Payment Pending)'
+                      : 'Payment Pending'}
               </span>
             </div>
             <div className="flex justify-between">
@@ -184,6 +192,17 @@ export const CheckoutPage: React.FC = () => {
               </span>
             </div>
           </div>
+
+          {isManualWallet(confirmedOrder.paymentMethod) && (
+            <div className="bg-[#FFF9E8] border border-[#C7A46A]/45 rounded-xl p-5 space-y-2 text-sm">
+              <p className="font-semibold text-[#174D40]">{walletLabel(confirmedOrder.paymentMethod)} manual payment instructions</p>
+              <p>Amount: <strong>{formatPkr(confirmedOrder.totalPkr)}</strong></p>
+              <p>Receiving number: <strong className="tabular-nums">{WALLET_RECEIVING_NUMBER}</strong></p>
+              <p>Open your wallet app and transfer the exact amount only after confirming the recipient account name matches the store. Share your order number and wallet transaction ID with store support.</p>
+              <p className="font-semibold text-[#865B00]">Payment pending — your order is NOT marked paid until the merchant verifies receipt.</p>
+              <p className="text-xs text-[#252B29]/70">Never share wallet PIN, OTP, password or card details.</p>
+            </div>
+          )}
 
           <div className="space-y-2">
             <h2 className="text-xs font-semibold uppercase tracking-wider text-[#252B29]/60">
@@ -432,6 +451,35 @@ export const CheckoutPage: React.FC = () => {
                       </span>
                     </div>
                   </label>
+
+                  {(['easypaisa', 'jazzcash'] as const).map((wallet) => (
+                    <label key={wallet} className="flex items-start gap-3 p-4 rounded-xl border border-[#174D40]/20 bg-white cursor-pointer">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value={wallet}
+                        checked={paymentMethod === wallet}
+                        onChange={() => setPaymentMethod(wallet)}
+                        className="mt-1"
+                      />
+                      <div className="text-sm space-y-1">
+                        <span className="font-semibold text-[#252B29] block">
+                          {walletLabel(wallet)} — Manual Wallet Transfer
+                        </span>
+                        <span className="text-xs text-[#252B29]/70 block">
+                          Pay to {WALLET_RECEIVING_NUMBER} through the {walletLabel(wallet)} app and send your transaction reference for verification.
+                          Payment is not automatically deducted or confirmed.
+                        </span>
+                      </div>
+                    </label>
+                  ))}
+                  {isManualWallet(paymentMethod) && (
+                    <div className="p-4 rounded-xl border border-amber-300 bg-amber-50 text-sm space-y-1">
+                      <p className="font-semibold text-[#174D40]">{walletLabel(paymentMethod)} receiving number: <span className="tabular-nums">{WALLET_RECEIVING_NUMBER}</span></p>
+                      <p className="text-xs text-[#252B29]/80">Place your order first, then transfer the displayed total using your wallet app. Check the recipient's name before sending. Your order stays payment-pending until the merchant verifies it.</p>
+                      <p className="text-xs text-[#252B29]/80">Never enter wallet PIN, OTP or card information on this website.</p>
+                    </div>
+                  )}
 
                   {safepayAvailable && siteSettings.onlinePaymentsEnabled === true ? (
                     <label className="flex items-start gap-3 p-4 rounded-xl border border-[#174D40]/25 bg-white cursor-pointer">
