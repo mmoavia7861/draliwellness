@@ -50,20 +50,29 @@ export const HeroBannerCarousel: React.FC = () => {
       ? siteSettings.banners.filter((b) => Boolean(b.imageUrl))
       : HERO_BANNER_SLIDES;
 
-  // The owner can replace banners from the admin CMS. Never override saved
-  // Firebase Storage URLs with a hardcoded image or reintroduce retired artwork.
+  // Keep admin-uploaded replacements, but recover the requested featured
+  // banner when Firestore still holds an older, retired image URL.
   const [unavailableImages, setUnavailableImages] = useState<string[]>([]);
-  const effectiveSlides = slides.filter((slide) =>
-    Boolean(slide.imageUrl) &&
-    !slide.imageUrl.includes('brainaxis-energy-boost-hero-banner.webp') &&
-    !slide.imageUrl.includes('brainaxis-energy-boost-hero-20261122.png') &&
-    !unavailableImages.includes(slide.imageUrl)
-  );
+  const isRetiredBanner = (url: string) =>
+    url.includes('brainaxis-energy-boost-hero-banner.webp') ||
+    url.includes('brainaxis-energy-boost-hero-20261122.png');
+  const savedFeatured = slides.find((slide) => slide.id === FEATURED_ENERGY_BOOST_BANNER.id);
+  const featuredSlide = savedFeatured && !isRetiredBanner(savedFeatured.imageUrl)
+    ? savedFeatured
+    : FEATURED_ENERGY_BOOST_BANNER;
+  const effectiveSlides = [
+    featuredSlide,
+    ...slides.filter((slide) =>
+      slide.id !== FEATURED_ENERGY_BOOST_BANNER.id &&
+      Boolean(slide.imageUrl) &&
+      !isRetiredBanner(slide.imageUrl)
+    ),
+  ].filter((slide) => !unavailableImages.includes(slide.imageUrl));
   const slideCount = effectiveSlides.length;
-  const intervalMs = Math.min(60, Math.max(2, siteSettings.bannerIntervalSec || 5)) * 1000;
 
+  // Exactly five seconds per banner, including when the mouse is over the image.
+  const intervalMs = 5_000;
   const [activeIndex, setActiveIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
     if (activeIndex >= slideCount) {
@@ -72,12 +81,12 @@ export const HeroBannerCarousel: React.FC = () => {
   }, [slideCount, activeIndex]);
 
   useEffect(() => {
-    if (isPaused || slideCount <= 1) return;
+    if (slideCount <= 1) return;
     const timer = window.setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % slideCount);
     }, intervalMs);
     return () => window.clearInterval(timer);
-  }, [isPaused, slideCount, activeIndex, intervalMs]);
+  }, [slideCount, intervalMs]);
 
   const goPrev = () => {
     setActiveIndex((prev) => (prev - 1 + slideCount) % slideCount);
@@ -92,8 +101,7 @@ export const HeroBannerCarousel: React.FC = () => {
       aria-roledescription="carousel"
       aria-label="BrainAxis Featured Banners"
       data-active-slide={activeIndex}
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
+      data-rotation-ms={intervalMs}
       className="relative w-full bg-[#0E1311] border-b border-[#174D40]/15 overflow-hidden group"
     >
       <div className="relative w-full max-w-[1920px] mx-auto aspect-[2/1]">
