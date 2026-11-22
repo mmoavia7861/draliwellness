@@ -4,7 +4,7 @@ import { useStore } from '../context/StoreContext';
 import { BrandLogo } from './BrandLogo';
 
 export const Footer: React.FC = () => {
-  const { siteSettings, subscribeNewsletter, isAdmin } = useStore();
+  const { siteSettings, subscribeNewsletter } = useStore();
   const [email, setEmail] = useState('');
   const [consent, setConsent] = useState(false);
   const [status, setStatus] = useState<{ type: 'idle' | 'ok' | 'err'; msg: string }>({
@@ -149,13 +149,6 @@ export const Footer: React.FC = () => {
                 Refund &amp; Return Policy
               </Link>
             </li>
-            {isAdmin && (
-              <li>
-                <Link to="/admin" className="hover:text-white transition-colors font-medium text-[#C7A46A]">
-                  Admin Panel
-                </Link>
-              </li>
-            )}
           </ul>
         </div>
 
@@ -217,11 +210,6 @@ export const Footer: React.FC = () => {
             <p className="text-center sm:text-right">
               Dietary supplements are for nutritional support and not intended to replace medical advice.
             </p>
-            {isAdmin && (
-              <Link to="/admin" className="text-[#C7A46A] hover:text-white font-semibold transition-colors">
-                Admin
-              </Link>
-            )}
           </div>
         </div>
       </div>
