@@ -28,7 +28,6 @@ import { ContactPage } from './pages/ContactPage';
 import { FaqPage } from './pages/FaqPage';
 import { PolicyPage } from './pages/PolicyPage';
 import { AdminPage } from './pages/AdminPage';
-import { AiStudioPage } from './pages/AiStudioPage';
 
 const ScrollToTop: React.FC = () => {
   const { pathname } = useLocation();
@@ -61,7 +60,6 @@ export default function App() {
                 <Route path="/journal" element={<JournalPage />} />
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/faq" element={<FaqPage />} />
-                <Route path="/ai-studio" element={<AiStudioPage />} />
                 <Route
                   path="/privacy-policy"
                   element={<PolicyPage policyKey="privacyPolicy" title="Privacy Policy" />}

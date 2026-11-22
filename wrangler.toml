@@ -3,14 +3,11 @@ main = "workers/site-with-ai.js"
 compatibility_date = "2026-11-22"
 workers_dev = true
 
-# Vite frontend and Gemini AI Guide share this single Worker.
-# Website static assets stay on Cloudflare's asset-serving path.
-# Route AI requests through the Worker script before SPA HTML fallback.
+# React/Vite storefront. AI Guide has been retired and its endpoints return 410.
 [assets]
 directory = "./dist"
 binding = "ASSETS"
 not_found_handling = "single-page-application"
-run_worker_first = ["/api/assistant/*"]
+run_worker_first = ["/api/*"]
 
-# GEMINI_API_KEY is a Cloudflare Worker Secret added in the dashboard.
-# NEVER place it in this file or in any VITE_ environment variable.
+# No AI secret is read by this Worker. The stored secret can be revoked separately.

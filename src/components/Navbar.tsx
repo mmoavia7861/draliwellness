@@ -48,9 +48,6 @@ export const Navbar: React.FC = () => {
           <NavLink to="/shop" className={navLinkClass}>
             Shop
           </NavLink>
-          <NavLink to="/ai-studio" className={navLinkClass}>
-            AI Guide
-          </NavLink>
           <NavLink to="/about" className={navLinkClass}>
             About
           </NavLink>
@@ -145,7 +142,6 @@ export const Navbar: React.FC = () => {
           {[
             { to: '/', label: 'Home' },
             { to: '/shop', label: 'Shop' },
-            { to: '/ai-studio', label: 'AI Wellness Studio' },
             { to: '/about', label: 'About Us' },
             { to: '/services', label: 'Wellness Services' },
             { to: '/track-order', label: 'Track Order' },

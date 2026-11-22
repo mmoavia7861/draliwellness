@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight,
@@ -6,6 +6,7 @@ import {
   ChevronDown,
   ShieldCheck,
   Sparkles,
+  MessageCircle,
   Stethoscope,
   Truck,
 } from 'lucide-react';
@@ -14,20 +15,11 @@ import { ProductCard } from '../components/ProductCard';
 import { PageMeta } from '../components/PageMeta';
 import { BrandLogo } from '../components/BrandLogo';
 import { HeroBannerCarousel } from '../components/HeroBannerCarousel';
-import { AiAssistantWidget } from '../components/AiAssistantWidget';
 import { formatPkr } from '../utils/commerce';
 
 export const HomePage: React.FC = () => {
   const { liveProducts, siteSettings, services, reviews, journalPosts } = useStore();
   const [openFaq, setOpenFaq] = useState<number | null>(0);
-  const aiInputRef = useRef<HTMLInputElement>(null);
-
-  const focusAiGuide = () => {
-    const el = document.getElementById('ai-wellness-guide');
-    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    setTimeout(() => aiInputRef.current?.focus(), 250);
-  };
-
   const primaryProduct = liveProducts[0];
   const secondaryProduct = liveProducts[1];
   const approvedReviews = reviews.filter((r) => r.approved);
@@ -261,7 +253,7 @@ export const HomePage: React.FC = () => {
         </section>
       )}
 
-      {/* 4. Why Choose Us + AI Wellness Guide */}
+      {/* 4. Why Choose Us */}
       <section id="why-choose-us" className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
           <div className="max-w-2xl space-y-2">
@@ -272,7 +264,7 @@ export const HomePage: React.FC = () => {
               Why Choose Us
             </h2>
             <p className="text-sm sm:text-base text-[#252B29]/75">
-              Every BrainAxis launch supplement is backed by transparent labeling, reliable nationwide delivery, and instant AI label guidance.
+              Explore BrainAxis supplements with clear product labeling, order tracking, and nationwide delivery across Pakistan.
             </p>
           </div>
 
@@ -294,10 +286,9 @@ export const HomePage: React.FC = () => {
                 desc: 'Dependable courier dispatch across Pakistan with Cash on Delivery and verification-protected online order tracking.',
               },
               {
-                icon: Sparkles,
-                title: 'AI Wellness Guide',
-                desc: 'Instant AI-powered answers on BrainAxis ingredients, dosage directions, and Cash on Delivery policies in English or Roman Urdu.',
-                actionLabel: 'Ask AI Guide',
+                icon: MessageCircle,
+                title: 'Customer Support',
+                desc: 'Contact our support team for product details, orders, delivery questions, or help using the website.',
               },
             ].map((item) => {
               const Icon = item.icon;
@@ -313,22 +304,11 @@ export const HomePage: React.FC = () => {
                     <h3 className="font-serif text-xl font-semibold text-[#252B29]">{item.title}</h3>
                     <p className="text-sm text-[#252B29]/75 leading-relaxed">{item.desc}</p>
                   </div>
-                  {'actionLabel' in item && item.actionLabel && (
-                    <button
-                      type="button"
-                      onClick={focusAiGuide}
-                      className="self-start text-xs font-semibold text-[#174D40] hover:underline inline-flex items-center gap-1.5 pt-1 cursor-pointer"
-                    >
-                      <span>{item.actionLabel}</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
-                  )}
                 </div>
               );
             })}
           </div>
 
-          <AiAssistantWidget inputRef={aiInputRef} />
         </div>
       </section>
 

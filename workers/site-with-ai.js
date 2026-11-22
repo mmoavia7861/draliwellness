@@ -1,21 +1,21 @@
-import aiGuide from './ai-guide.js';
-
 /**
- * One Cloudflare Worker for the React storefront and its Gemini AI Guide.
- * Static assets are served by Cloudflare, with the Worker invoked first
- * only for /api/assistant/*.
+ * Dr. Ali Hassan Health & Wellness storefront.
+ * AI Guide feature retired: do not call Gemini or expose AI endpoints.
+ * Keep the 410 response to avoid serving the SPA for stale AI URLs.
  */
 export default {
-  async fetch(request, env, ctx) {
-    const pathname = new URL(request.url).pathname;
-
-    if (pathname.startsWith('/api/assistant/')) {
-      return aiGuide.fetch(request, env, ctx);
+  async fetch(request, env) {
+    const path = new URL(request.url).pathname;
+    if (path.startsWith('/api/assistant/')) {
+      return new Response(JSON.stringify({ error: 'AI Guide is no longer available.' }), {
+        status: 410,
+        headers: {
+          'content-type': 'application/json; charset=utf-8',
+          'cache-control': 'no-store',
+        },
+      });
     }
-
-    // Defensive fallback for direct Worker invocations and future routes.
-    // Unknown /api/ paths must never return the React index.html document.
-    if (pathname.startsWith('/api/')) {
+    if (path.startsWith('/api/')) {
       return new Response(JSON.stringify({ error: 'API route not found.' }), {
         status: 404,
         headers: {
@@ -24,7 +24,6 @@ export default {
         },
       });
     }
-
     return env.ASSETS.fetch(request);
   },
 };
