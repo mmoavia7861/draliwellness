@@ -1,8 +1,5 @@
-name = "draliwellness-ai-guide"
-main = "workers/ai-guide.js"
-compatibility_date = "2026-11-21"
-workers_dev = true
+name = "draliwellness"
+pages_build_output_dir = "./dist"
+compatibility_date = "2026-11-22"
 
-# Set GEMINI_API_KEY as a secret, NOT in this file.
-# Optionally add an AI_RATE_KV namespace binding for per-IP limits.
-# Optionally add ALLOWED_ORIGINS as a non-secret var for preview hosts.
+# AI Guide has its own workers/wrangler.toml configuration.

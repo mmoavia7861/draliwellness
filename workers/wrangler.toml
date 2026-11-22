@@ -1,0 +1,6 @@
+name = "draliwellness-ai-guide"
+main = "ai-guide.js"
+compatibility_date = "2026-11-21"
+workers_dev = true
+
+# Deploy after storefront launch using --config workers/wrangler.toml
