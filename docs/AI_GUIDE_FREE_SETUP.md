@@ -1,6 +1,6 @@
 # BrainAxis AI Guide — Gemini Free Tier Setup
 
-The website initially runs on GitHub Pages and is moving its static frontend to Cloudflare Pages. Neither host automatically executes the Express `server.ts` API. A missing
+The website initially runs on GitHub Pages and the static frontend is being deployed to Cloudflare Workers Static Assets. Neither static host automatically executes the Express `server.ts` API. A missing
 `/api/assistant/ask` route is therefore not solved by changing the model alone.
 
 ## Already changed in this repository
@@ -26,9 +26,10 @@ The website initially runs on GitHub Pages and is moving its static frontend to 
 4. Deploy the Worker:
    `npx wrangler deploy --config workers/wrangler.toml`
    Save the exact `https://...workers.dev` URL printed by Wrangler.
-5. After moving the storefront to Cloudflare Pages, configure its build
-   environment variable `VITE_AI_GUIDE_API_BASE_URL` to the deployed Worker
-   URL. Until migration, use the GitHub Actions variable of the same name.
+5. After switching the storefront to Cloudflare Workers Static Assets,
+   configure the storefront's **build** environment variable
+   `VITE_AI_GUIDE_API_BASE_URL` to the deployed AI Worker URL. Until then,
+   use the GitHub Actions variable of the same name.
    This is a public endpoint address, not the secret key.
 6. Redeploy the current frontend host so Vite embeds the Worker URL.
 7. Test the site's AI Guide: status should show `Gemini Flash-Lite · Free tier`

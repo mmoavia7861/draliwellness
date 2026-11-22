@@ -1,28 +1,46 @@
-# Cloudflare Pages deployment: Dr. Ali Hassan Health & Wellness
+# Dr. Ali Hassan Health & Wellness — Cloudflare Workers Static Assets
 
-This repository is React + Vite with Firebase. Cloudflare Pages hosts the compiled static website in dist. It does not automatically execute server.ts (Express) or the Gemini API.
+The frontend is React + Vite; its compiled output is `dist`.
+The Cloudflare project named `draliwellness` was created under **Workers** (not Pages),
+so it must use Workers Static Assets rather than `pages_build_output_dir`.
+The root `wrangler.toml` now contains `[assets] directory = "./dist"` and
+`not_found_handling = "single-page-application"` for React Router routes.
 
-## Stage A: deploy preview without changing live DNS
+## Deploy from the EXISTING Cloudflare Workers project
 
-1. In Cloudflare go to Workers & Pages > Create application > Pages > Connect to Git.
-2. Select GitHub repository mmoavia7861/draliwellness and branch main.
-3. Name draliwellness (if available), framework React (Vite), root directory /.
-4. Build command: bun run build
-5. Build output directory: dist
-6. Optional build variable VITE_ENABLE_AI_STUDIO=false; leave VITE_AI_GUIDE_API_BASE_URL empty until the Worker is deployed. Never put Gemini keys in a VITE_ variable.
-7. Deploy and verify the assigned pages.dev URL before touching custom domain records.
-8. Test homepage, shop, both product images, /admin login, Firestore reads, checkout, order status, and direct navigation to /admin. Live Gemini is not yet deployed; the offline label guide is expected.
+Keep these Build settings:
+- Git repository: `mmoavia7861/draliwellness`
+- Production branch: `main`
+- Build command: `bun run build`
+- Deploy command: `npx wrangler deploy`
+- Preview command: optional (leave unset; `npx wrangler preview` is not a required deploy command).
+- Root: repository root.
 
-## Stage B: cut over custom domain after successful preview
+Once GitHub receives this change, Cloudflare Git-connected Builds should launch a new build.
+If not, in Workers & Pages -> `draliwellness` -> Deployments / Builds,
+trigger a new deployment of the latest commit. Do not create a second Worker.
+The initial preview URL is the actual workers.dev hostname Cloudflare assigns.
 
-Keep draliwellness.com on GitHub Pages until Pages is fully tested. Only after approval, connect draliwellness.com in Pages > Custom domains and use the exact DNS records Cloudflare instructs you to create. Preserve MX/TXT records and other unrelated DNS values. Check Firebase Authentication Authorized domains, website SSL, and both root and www. Keep the working GitHub Pages deployment as fallback until verification is complete.
+Check the preview before custom-domain migration:
+- `/` homepage renders, no white screen
+- `/shop` renders, and both BrainAxis product images load
+- `/admin` direct navigation and refresh return the React page
+- Firebase admin login and database permissions work
+- Cart and COD checkout work and server-side validation remains in place
+- No 404/HTML response is mistaken for an AI backend API
 
-## Stage C: later deploy Gemini AI backend
+**Do not change `draliwellness.com` DNS yet.** The current domain is still
+serving GitHub Pages. Static Workers preview testing is separate from
+cutting over the live custom domain. Only attach the domain to the Worker
+once the preview works, and replace existing GitHub Pages web records
+according to Cloudflare’s custom domain setup. Preserve email and verification records.
 
-The root wrangler.toml is the Pages configuration (output dist). The separate workers/wrangler.toml is the AI Guide Worker configuration. From the repository root, run:
-npx wrangler secret put GEMINI_API_KEY --config workers/wrangler.toml
-npx wrangler deploy --config workers/wrangler.toml
+## Later, separately deploy Gemini AI Guide
 
-On the Cloudflare Pages project, configure the build variable VITE_AI_GUIDE_API_BASE_URL to the deployed public workers.dev origin and redeploy. Do not expose the secret key in client code.
+The *separate* AI Worker configuration lives at `workers/wrangler.toml`.
+Its `GEMINI_API_KEY` must be a server-side secret. Never put it in the Vite client.
+Use `npx wrangler deploy --config workers/wrangler.toml` for the AI Worker.
 
-Cloudflare Pages deployment is a frontend migration, not an automatic deployment of Express routes. The existing Firebase project retains auth and database functions.
+Static assets do NOT execute the Express server from `server.ts`.
+Until the AI Worker exists, the storefront AI Guide should use its
+explicitly labeled offline product-information fallback.
