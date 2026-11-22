@@ -4,6 +4,7 @@
  * Keep the 410 response to avoid serving the SPA for stale AI URLs.
  */
 import { orderMailRouter } from './order-notifications.js';
+import { whatsappOrderRouter } from './whatsapp-confirmations.js';
 
 export default {
   async fetch(request, env) {
@@ -16,6 +17,9 @@ export default {
           'cache-control': 'no-store',
         },
       });
+    }
+    if (path.startsWith('/api/whatsapp/')) {
+      return whatsappOrderRouter(request, env);
     }
     if (path.startsWith('/api/orders/')) {
       return orderMailRouter(request, env);
