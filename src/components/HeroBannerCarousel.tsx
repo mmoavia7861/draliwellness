@@ -10,7 +10,7 @@ const assetUrl = (url: string): string => `${import.meta.env.BASE_URL}${url.repl
 
 const FEATURED_ENERGY_BOOST_BANNER: HeroBannerSlide = {
   id: 'brainaxis-energy-boost-hero-2026',
-  imageUrl: assetUrl('/assets/aistudio/brainaxis-energy-boost-hero-20261122.png'),
+  imageUrl: assetUrl('/assets/aistudio/brainaxis-energy-boost-owner-banner-20261122.webp'),
   alt: 'BrainAxis Energy Boost — premium multivitamin and mineral formula, Dr. Ali Hassan Health & Wellness hero banner',
   to: '/product/brainaxis-energy-boost',
 };
@@ -50,19 +50,17 @@ export const HeroBannerCarousel: React.FC = () => {
       ? siteSettings.banners.filter((b) => Boolean(b.imageUrl))
       : HERO_BANNER_SLIDES;
 
-  // Always show the new owner-approved artwork even when Firestore still contains
-  // the previous image URL for this slide. Preserve any other admin slides.
-  const featuredSlide = {
-    ...(slides.find((slide) => slide.id === FEATURED_ENERGY_BOOST_BANNER.id) ?? {}),
-    ...FEATURED_ENERGY_BOOST_BANNER,
-  };
+  // Override stale Firestore banner URLs with the owner-approved replacement.
+  // Skip an unavailable image so no broken banner appears before assets deploy.
+  const [unavailableImages, setUnavailableImages] = useState<string[]>([]);
   const effectiveSlides = [
-    featuredSlide,
+    FEATURED_ENERGY_BOOST_BANNER,
     ...slides.filter((slide) =>
       slide.id !== FEATURED_ENERGY_BOOST_BANNER.id &&
-      !slide.imageUrl?.includes('brainaxis-energy-boost-hero-banner.webp')
+      !slide.imageUrl?.includes('brainaxis-energy-boost-hero-banner.webp') &&
+      !slide.imageUrl?.includes('brainaxis-energy-boost-hero-20261122.png')
     ),
-  ];
+  ].filter((slide) => !unavailableImages.includes(slide.imageUrl));
   const slideCount = effectiveSlides.length;
   const intervalMs = Math.min(60, Math.max(2, siteSettings.bannerIntervalSec || 5)) * 1000;
 
@@ -100,7 +98,7 @@ export const HeroBannerCarousel: React.FC = () => {
       onMouseLeave={() => setIsPaused(false)}
       className="relative w-full bg-[#0E1311] border-b border-[#174D40]/15 overflow-hidden group"
     >
-      <div className="relative w-full max-w-[1920px] mx-auto aspect-[16/9]">
+      <div className="relative w-full max-w-[1920px] mx-auto aspect-[2/1]">
         {effectiveSlides.map((slide, index) => {
           const isActive = index === activeIndex;
           return (
@@ -120,7 +118,10 @@ export const HeroBannerCarousel: React.FC = () => {
                 loading={index === 0 ? 'eager' : 'lazy'}
                 fetchPriority={index === 0 ? 'high' : 'auto'}
                 decoding="async"
-                className={`relative w-full h-full ${slide.id === FEATURED_ENERGY_BOOST_BANNER.id ? 'object-contain' : 'object-cover'}`}
+                className="relative w-full h-full object-contain"
+                onError={() => setUnavailableImages((previous) =>
+                  previous.includes(slide.imageUrl) ? previous : [...previous, slide.imageUrl]
+                )}
               />
             </Link>
           );
