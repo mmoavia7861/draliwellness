@@ -1,4 +1,5 @@
 import type { Category, Product, Service, SiteSettings } from '../types';
+import { FOUNDER_BIO_FULL, FOUNDER_VISION_TAGLINE } from '../content/founderBiography';
 
 const assetUrl = (url: string): string => `${import.meta.env.BASE_URL}${url.replace(/^\/+/, '')}`;
 
@@ -241,10 +242,8 @@ export const LAUNCH_SITE_SETTINGS: SiteSettings = {
   founderName: 'Dr. Muhammad Ali Hassan',
   founderTitle: 'Founder — Dr. Ali Hassan Health & Wellness & BrainAxis',
   founderPhotoUrl: assetUrl('/assets/aistudio/founder-dr-muhammad-ali-hassan.webp'),
-  founderBio:
-    'Dr. Muhammad Ali Hassan is a Pakistan-based medical researcher and the founder of Dr. Ali Hassan Health & Wellness and BrainAxis. His public LinkedIn profile lists studies at Shifa Tameer-e-Millat University (2019–2024), engagement with the Pakistan Academy of Neurological Surgery (PANS), published research and the Dr. Syed Qamar Alam Research Gold Medal (March 2025). The BrainAxis line focuses on transparent supplement information and responsible customer guidance.',
-  founderMission:
-    'To provide trustworthy, honestly labeled everyday wellness formulations backed by transparent product information and responsible guidance.',
+  founderBio: FOUNDER_BIO_FULL,
+  founderMission: FOUNDER_VISION_TAGLINE,
   whatsappNumber: '923480260060',
   whatsappGreeting:
     'Hello Dr. Ali Hassan Health & Wellness team, I have a question about BrainAxis supplements.',
