@@ -7,7 +7,7 @@ import {
   formatPkr,
   getVisibleCategories,
 } from './commerce';
-import { computeTrackingKey } from './tracking';
+import { computeTrackingKey, generateTrackingId, normalizeTrackingId } from './tracking';
 import { LAUNCH_CATEGORIES, LAUNCH_PRODUCTS } from '../data/launchCatalog';
 import type { CartItem, Category, Coupon, Product } from '../types';
 
@@ -146,4 +146,23 @@ test('computeTrackingKey produces deterministic case-insensitive verification ha
   const k2 = await computeTrackingKey('drh-261120-1234', ' customer@example.com ');
   assert.equal(k1, k2);
   assert.equal(k1.length, 64);
+});
+
+test('tracking ID is a secure random opaque identifier with no email required', () => {
+  const ids = new Set(Array.from({ length: 50 }, () => generateTrackingId()));
+  assert.equal(ids.size, 50);
+  for (const id of ids) {
+    assert.match(id, /^TRK-[A-HJ-NP-Z2-9]{20}$/);
+    assert.equal(normalizeTrackingId(id.toLowerCase()), id);
+    assert.equal(normalizeTrackingId('  ' + id + '  '), id);
+  }
+  assert.equal(normalizeTrackingId('DRH-261122-2266'), null);
+  assert.equal(normalizeTrackingId('customer@example.com'), null);
+  assert.equal(normalizeTrackingId('TRK-1234'), null);
+});
+
+test('older 64-character tracking IDs remain lookup-compatible without an email field', async () => {
+  const legacyKey = await computeTrackingKey('DRH-261122-2266', 'old@example.com');
+  assert.equal(normalizeTrackingId(legacyKey), legacyKey);
+  assert.equal(normalizeTrackingId(legacyKey.toUpperCase()), legacyKey);
 });
