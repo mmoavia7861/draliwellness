@@ -1,13 +1,15 @@
 /**
  * Dr. Ali Hassan Health & Wellness transactional order alert.
- * No Firebase Admin JSON/key is required. The server independently checks
- * the public, privacy-minimized orderTracking document before emailing.
+ * The server independently checks the privacy-minimized orderTracking record
+ * before emailing. An optional *read-only* Firestore service-account secret
+ * lets the Worker include full private delivery details in the owner email.
  *
  * Resend secret and verified sender/recipient live ONLY in Worker Runtime:
  * RESEND_API_KEY, ORDER_NOTIFICATION_FROM, ORDER_NOTIFICATION_TO.
  * The email is a NEW ORDER alert, never proof of a successful card payment.
  */
 import firebaseConfig from '../firebase-applet-config.json';
+import { fetchPrivateOrderForNotification, formatPrivateOrderText } from './order-email-details.js';
 
 const encoder = new TextEncoder();
 const allowedOrigins = new Set([
@@ -27,6 +29,7 @@ const compactJson = (body, status=200, origin='') => {
   return new Response(JSON.stringify(body), {status,headers});
 };
 const configured = (env) => Boolean(env.RESEND_API_KEY && env.ORDER_NOTIFICATION_FROM && env.ORDER_NOTIFICATION_TO);
+const detailsConfigured = (env) => configured(env) && Boolean(env.FIREBASE_SERVICE_ACCOUNT_JSON);
 const isEmail = (value) => typeof value === 'string' && value.length <= 180 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 const isOrder = (value) => typeof value === 'string' && /^DRH-[0-9]{6}-[0-9]{4}$/.test(value);
 const clean = (value, limit=150) => typeof value === 'string' ? value.replace(/[\r\n\u0000-\u001f]/g,' ').trim().slice(0,limit) : '';
@@ -67,7 +70,7 @@ async function verifiedTracking(orderNumber, email) {
   return {id,orderNumber,method:result.paymentMethod,city:clean(result.city,80),
     totalPkr:Math.round(result.totalPkr),items:(Array.isArray(result.itemsSummary)?result.itemsSummary:[]).slice(0,30).map(x=>clean(x,140))};
 }
-async function sendEmail(env, order, email) {
+async function sendEmail(env, order, email, privateDetails) {
   const from = clean(env.ORDER_NOTIFICATION_FROM,180);
   const to = clean(env.ORDER_NOTIFICATION_TO,180);
   if (!isEmail(to) || !/^.{1,60}<[^<>]+@[^<>]+\.[^<>]+>$/.test(from) && !isEmail(from))
@@ -81,11 +84,13 @@ async function sendEmail(env, order, email) {
     'Order Total: PKR '+order.totalPkr,
     'City: '+order.city,
     'Customer Email: '+email,
-    'Items:',
-    ...order.items.map(x=>'- '+x),
+    ...(privateDetails
+      ? ['', formatPrivateOrderText(privateDetails)]
+      : ['Items:', ...order.items.map(x=>'- '+x), '',
+         'Private customer address and phone are available in the admin panel.',
+         'To receive those details by email, configure FIREBASE_SERVICE_ACCOUNT_JSON as a Worker runtime secret.']),
     '',
-    'Sign in to your existing Firebase Admin panel to view shipping details.',
-    'This message does not confirm a completed card payment.',
+    'Payment status is pending. Verify any wallet transfer before dispatch.',
   ].join('\n');
   const response = await fetch('https://api.resend.com/emails',{
     method:'POST',
@@ -105,7 +110,7 @@ export async function orderMailRouter(request, env) {
   if(origin && !allowedOrigins.has(origin))return reply({error:'Origin not allowed'},403);
   if(request.method==='OPTIONS')return reply({ok:true});
   if(pathname === '/api/orders/notification-status' && request.method === 'GET')
-    return reply({enabled:configured(env)});
+    return reply({enabled:configured(env),fullOrderDetailsEnabled:detailsConfigured(env)});
   if(pathname !== '/api/orders/notify' || request.method !== 'POST')
     return reply({error:'Not found'},404);
   if(!configured(env))
@@ -123,7 +128,10 @@ export async function orderMailRouter(request, env) {
   try {
     const verified=await verifiedTracking(order,email);
     if(!verified)return reply({error:'Order verification not available'},404);
-    await sendEmail(env,verified,email);
+    const privateDetails = detailsConfigured(env)
+      ? await fetchPrivateOrderForNotification(env, verified, email)
+      : null;
+    await sendEmail(env,verified,email,privateDetails);
     return reply({sent:true});
   }catch (error) {
     console.error('Order notification failed:',error instanceof Error?error.message:'unknown');
