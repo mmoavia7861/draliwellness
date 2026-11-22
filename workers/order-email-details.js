@@ -117,7 +117,12 @@ export async function fetchPrivateOrderForNotification(env, verified, email) {
   // to this mail endpoint. The email is composed only from the stored order.
   if (data.id !== verified.orderNumber ||
       data.orderNumber !== verified.orderNumber ||
-      data.trackingKey !== verified.id ||
+      // Old orders use the notification lookup hash as their tracking key.
+      // New orders display a separate cryptographically random TRK- ID,
+      // while the verified notification alias remains a hashed Firestore doc.
+      !(data.trackingKey === verified.id ||
+        (typeof data.trackingKey === 'string' &&
+         /^TRK-[A-HJ-NP-Z2-9]{20}$/.test(data.trackingKey))) ||
       String(data.customerEmail || '').trim().toLowerCase() !== email ||
       data.status !== 'placed' ||
       data.paymentStatus !== 'pending' ||
