@@ -2,7 +2,7 @@
 
 The website now requests a transactional **owner notification email** after
 the customer's order is successfully saved to Firestore. This covers COD,
-WhatsApp-confirmation and Safepay-pending orders. Payment status is explicitly
+WhatsApp-confirmation, Easypaisa and JazzCash manual orders. Payment status is explicitly
 **pending** in this email; it is not proof of card payment.
 
 The worker verifies a fresh, real order-tracking record in the existing
@@ -19,7 +19,7 @@ Firebase project's named database before using Resend. This approach does
   number, payment method, total, city, item summary and buyer email.
 - Email recipients/Resend key are *never* sourced from the visitor.
 - Email failure never undoes an already-saved Firebase order.
-- Safepay and COD order storage are unchanged.
+- Existing COD, WhatsApp and manual wallet order storage remain unchanged.
 - `GET /api/orders/notification-status` returns JSON `{enabled:false}`
   until all three email settings below exist in the Worker runtime.
 - The frontend uses `https://draliwellness.moavia400.workers.dev` for
@@ -54,9 +54,7 @@ Firebase project's named database before using Resend. This approach does
 
 ## Safety and limitations
 
-- New order notification is not a card payment receipt; Safepay requires
-  separately configured merchant credentials, verified webhook and server-side
-  order reconciliation. Safepay remains disabled until those steps pass.
+- A new order notification does not prove a manual wallet transfer was received. Verify any incoming payment separately before dispatch.
 - Resend's idempotency header helps prevent duplicate notifications for
   24 hours; not a permanent global deduplication lock. The Worker only
   accepts newly placed (within 15 minutes) order notifications.

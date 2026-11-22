@@ -59,7 +59,7 @@ async function verifiedTracking(orderNumber, email) {
   const source = record?.fields || {};
   const result = Object.fromEntries(Object.entries(source).map(([k,v])=>[k,fireValue(v)]));
   if (result.orderNumber !== orderNumber || result.status !== 'placed' ||
-      result.paymentStatus !== 'pending' || !['cod','whatsapp','safepay'].includes(result.paymentMethod) ||
+      result.paymentStatus !== 'pending' || !['cod','whatsapp','easypaisa','jazzcash'].includes(result.paymentMethod) ||
       !Number.isFinite(result.totalPkr) || result.totalPkr < 0 || result.totalPkr > 10000000) return null;
   const age = Date.now() - Date.parse(String(result.createdAt || ''));
   // A valid, recently committed order can trigger one owner alert.
