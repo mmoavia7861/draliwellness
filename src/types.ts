@@ -13,7 +13,7 @@ export type OrderStatus =
   | 'delivered'
   | 'cancelled';
 
-export type PaymentMethod = 'cod' | 'whatsapp' | 'jazzcash' | 'easypaisa' | 'card';
+export type PaymentMethod = 'cod' | 'whatsapp' | 'jazzcash' | 'easypaisa' | 'card' | 'safepay';
 export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
 
 export interface SupplementFactRow {

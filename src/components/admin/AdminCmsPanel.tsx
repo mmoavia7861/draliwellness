@@ -396,7 +396,7 @@ export const AdminCmsPanel: React.FC<AdminCmsPanelProps> = ({
                 setCmsDraft({ ...cmsDraft, onlinePaymentsEnabled: e.target.checked })
               }
             />
-            <span>Online Payments Enabled</span>
+            <span>Safepay Online Payments Enabled (only after merchant verification)</span>
           </label>
         </div>
       </section>

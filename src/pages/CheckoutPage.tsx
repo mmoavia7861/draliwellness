@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CheckCircle2, Lock, MessageCircle, Truck } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
@@ -23,7 +23,24 @@ export const CheckoutPage: React.FC = () => {
   const [province, setProvince] = useState(savedAddr?.province || '');
   const [postalCode, setPostalCode] = useState(savedAddr?.postalCode || '');
   const [notes, setNotes] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'whatsapp'>('cod');
+  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'whatsapp' | 'safepay'>('cod');
+  const [safepayAvailable, setSafepayAvailable] = useState(false);
+  const [safepayEnvironment, setSafepayEnvironment] = useState<'sandbox' | 'production'>('sandbox');
+  const pendingSafepayOrder = useRef<Order | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch('/api/payments/safepay/status', { signal: controller.signal })
+      .then((r) => r.headers.get('content-type')?.includes('application/json') ? r.json() : null)
+      .then((result: {enabled?:boolean;environment?:'sandbox'|'production'} | null) => {
+        if (result?.enabled === true) {
+          setSafepayAvailable(true);
+          setSafepayEnvironment(result.environment === 'production' ? 'production' : 'sandbox');
+        }
+      })
+      .catch(() => { /* COD and WhatsApp remain available */ });
+    return () => controller.abort();
+  }, []);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState('');
@@ -66,6 +83,33 @@ export const CheckoutPage: React.FC = () => {
 
     setSubmitting(true);
     try {
+      if (parsed.data.paymentMethod === 'safepay') {
+        if (!safepayAvailable || siteSettings.onlinePaymentsEnabled !== true) {
+          throw new Error('Safepay is not ready. Choose Cash on Delivery instead.');
+        }
+        // Keep a saved, pending order for a retry without creating duplicates.
+        const order = pendingSafepayOrder.current ?? await placeOrder(parsed.data);
+        pendingSafepayOrder.current = order;
+        const response = await fetch('/api/payments/safepay/checkout', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({orderId: order.id, email:order.customerEmail}),
+        });
+        const result = response.headers.get('content-type')?.includes('application/json')
+          ? (await response.json()) as {checkoutUrl?:string;error?:string}
+          : null;
+        if (!response.ok || !result?.checkoutUrl) {
+          throw new Error(result?.error || 'Safepay checkout is not available right now. Your order is still payment-pending.');
+        }
+        // No payment is marked paid here. Only a verified webhook updates that status.
+        sessionStorage.setItem('safepay:email:'+order.id, order.customerEmail);
+        const target = new URL(result.checkoutUrl);
+        if (target.protocol !== 'https:' || !['sandbox.api.getsafepay.com','api.getsafepay.com'].includes(target.hostname)) {
+          throw new Error('The payment provider returned an invalid checkout address.');
+        }
+        window.location.assign(target.toString());
+        return;
+      }
       const order = await placeOrder(parsed.data);
       setConfirmedOrder(order);
     } catch (err) {
@@ -379,17 +423,36 @@ export const CheckoutPage: React.FC = () => {
                     </div>
                   </label>
 
-                  <div className="p-4 rounded-xl border border-dashed border-[#252B29]/20 bg-[#FAF8F2]/60 opacity-75 flex items-start gap-3">
-                    <Lock className="w-4 h-4 text-[#252B29]/60 mt-0.5 shrink-0" />
-                    <div className="text-xs text-[#252B29]/75">
-                      <span className="font-semibold block text-[#252B29]">
-                        Online Card / JazzCash / Easypaisa (Not Yet Connected)
-                      </span>
-                      <span>
-                        Online merchant gateways are disabled until verified merchant credentials are configured.
-                      </span>
+                  {safepayAvailable && siteSettings.onlinePaymentsEnabled === true ? (
+                    <label className="flex items-start gap-3 p-4 rounded-xl border border-[#174D40]/25 bg-white cursor-pointer">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="safepay"
+                        checked={paymentMethod === 'safepay'}
+                        onChange={() => setPaymentMethod('safepay')}
+                        className="mt-1"
+                      />
+                      <div className="text-sm">
+                        <span className="font-semibold text-[#252B29] block">
+                          Safepay Online Payment {safepayEnvironment === 'sandbox' ? '(Test Mode)' : ''}
+                        </span>
+                        <span className="text-xs text-[#252B29]/70">
+                          Pay on Safepay's secure hosted checkout. Payment status updates after verification.
+                        </span>
+                      </div>
+                    </label>
+                  ) : (
+                    <div className="p-4 rounded-xl border border-dashed border-[#252B29]/20 bg-[#FAF8F2]/60 opacity-75 flex items-start gap-3">
+                      <Lock className="w-4 h-4 text-[#252B29]/60 mt-0.5 shrink-0" />
+                      <div className="text-xs text-[#252B29]/75">
+                        <span className="font-semibold block text-[#252B29]">
+                          Safepay Online Payment (Not Yet Activated)
+                        </span>
+                        <span>The merchant gateway remains disabled until Safepay credentials and verified webhooks are configured.</span>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -453,7 +516,9 @@ export const CheckoutPage: React.FC = () => {
                 disabled={submitting}
                 className="w-full h-12 rounded-lg bg-[#174D40] text-white text-sm font-semibold hover:bg-[#113A30] disabled:opacity-60 transition-colors cursor-pointer"
               >
-                {submitting ? 'Placing Order...' : `Confirm Order (${formatPkr(totals.totalPkr)})`}
+                {submitting ? 'Processing...' : paymentMethod === 'safepay'
+                  ? `Continue to Safepay (${formatPkr(totals.totalPkr)})`
+                  : `Confirm Order (${formatPkr(totals.totalPkr)})`}
               </button>
 
               <p className="text-xs text-[#252B29]/65 flex items-center gap-1.5">

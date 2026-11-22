@@ -3,6 +3,8 @@
  * AI Guide feature retired: do not call Gemini or expose AI endpoints.
  * Keep the 410 response to avoid serving the SPA for stale AI URLs.
  */
+import { safepayRouter } from './safepay.js';
+
 export default {
   async fetch(request, env) {
     const path = new URL(request.url).pathname;
@@ -14,6 +16,9 @@ export default {
           'cache-control': 'no-store',
         },
       });
+    }
+    if (path.startsWith('/api/payments/safepay/')) {
+      return safepayRouter(request, env);
     }
     if (path.startsWith('/api/')) {
       return new Response(JSON.stringify({ error: 'API route not found.' }), {
