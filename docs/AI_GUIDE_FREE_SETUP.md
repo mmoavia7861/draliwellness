@@ -1,7 +1,28 @@
 # BrainAxis AI Guide — Gemini Free Tier Setup
 
-The website initially runs on GitHub Pages and the static frontend is being deployed to Cloudflare Workers Static Assets. Neither static host automatically executes the Express `server.ts` API. A missing
-`/api/assistant/ask` route is therefore not solved by changing the model alone.
+The React storefront and BrainAxis AI Guide now share the same Cloudflare Worker, `draliwellness`. The Worker routes `/api/assistant/*` to Gemini and serves the Vite `dist` frontend through static assets. The old Express server in `server.ts` is not used by Cloudflare.
+
+## Current single-Worker setup
+
+The main Cloudflare Worker is **draliwellness**, configured by the root
+`wrangler.toml` and `workers/site-with-ai.js`. It combines the static React
+site with `workers/ai-guide.js` under `/api/assistant/*`. No second Worker,
+separate API URL, or Vite API base variable is needed on this deployment.
+
+1. Let Git-connected Cloudflare Builds deploy the latest main branch.
+   Existing build command: `bun run build`; deploy command:
+   `npx wrangler deploy`.
+2. In Cloudflare -> Workers & Pages -> `draliwellness` -> Settings ->
+   Variables and Secrets, add `GEMINI_API_KEY` as **Secret** (not plain text).
+   Keep this key private; do not include it in source code or VITE variables.
+3. Deploy/Save the secret and verify the actual `https://<worker>.workers.dev/api/assistant/status`
+   URL returns JSON with `enabled: true`. Before the key is added, status
+   reports `enabled: false`.
+4. Visit the actual storefront Worker preview URL, open AI Guide, and test
+   short English and Roman Urdu questions and SUNDEX-D high-dose caution.
+5. Before making the API publicly available at scale, enable edge rate
+   limiting and quota alerts. This repository's optional KV guard is not a
+   substitute for a hard Cloudflare rate-limit rule.
 
 ## Already changed in this repository
 
@@ -13,7 +34,7 @@ The website initially runs on GitHub Pages and the static frontend is being depl
   exists or a free-tier quota is exhausted. This fallback is **not AI**.
 - The key stays server-side; it must never be a `VITE_` environment variable.
 
-## Activate live Gemini on the current static frontend
+## Alternative: separate AI Worker (not needed for current setup)
 
 1. Obtain a Gemini Developer API key in [Google AI Studio](https://aistudio.google.com/apikey).
    Use a Google Cloud project with the free-tier quotas you intend to use.
@@ -26,10 +47,9 @@ The website initially runs on GitHub Pages and the static frontend is being depl
 4. Deploy the Worker:
    `npx wrangler deploy --config workers/wrangler.toml`
    Save the exact `https://...workers.dev` URL printed by Wrangler.
-5. After switching the storefront to Cloudflare Workers Static Assets,
-   configure the storefront's **build** environment variable
-   `VITE_AI_GUIDE_API_BASE_URL` to the deployed AI Worker URL. Until then,
-   use the GitHub Actions variable of the same name.
+5. Only for separate-Worker deployments, configure the storefront build variable
+   `VITE_AI_GUIDE_API_BASE_URL` to the AI Worker URL. Leave it empty for the
+   single-Worker setup above.
    This is a public endpoint address, not the secret key.
 6. Redeploy the current frontend host so Vite embeds the Worker URL.
 7. Test the site's AI Guide: status should show `Gemini Flash-Lite · Free tier`

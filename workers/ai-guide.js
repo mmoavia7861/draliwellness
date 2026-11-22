@@ -12,7 +12,10 @@ const DEFAULT_ALLOWED_ORIGINS = [
 const MAX_BODY_BYTES = 16000;
 const MAX_INPUT_LENGTH = 800;
 
-function originAllowed(origin, env) {
+function originAllowed(origin, env, requestOrigin) {
+  // Allow the actual same-origin storefront, including its workers.dev
+  // preview and any verified custom domain attached later.
+  if (origin === requestOrigin) return true;
   const configured = String(env.ALLOWED_ORIGINS || '').split(',').map((s) => s.trim()).filter(Boolean);
   const allowed = new Set([...DEFAULT_ALLOWED_ORIGINS, ...configured]);
   if (env.ALLOW_LOCAL_DEV === 'true') {
@@ -124,7 +127,7 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
     const origin = request.headers.get('Origin') || '';
-    const allowed = originAllowed(origin, env);
+    const allowed = originAllowed(origin, env, url.origin);
     const corsOrigin = allowed ? origin : '';
 
     if (path !== '/api/assistant/status' && path !== '/api/assistant/ask') {

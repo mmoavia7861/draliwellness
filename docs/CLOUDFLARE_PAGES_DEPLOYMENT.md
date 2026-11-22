@@ -44,3 +44,15 @@ Use `npx wrangler deploy --config workers/wrangler.toml` for the AI Worker.
 Static assets do NOT execute the Express server from `server.ts`.
 Until the AI Worker exists, the storefront AI Guide should use its
 explicitly labeled offline product-information fallback.
+
+## Single Worker AI API integration (added November 2026)
+
+The existing `draliwellness` Worker now also serves `/api/assistant/*` via
+`workers/site-with-ai.js` and `workers/ai-guide.js`. The only private
+runtime secret required for this integration is `GEMINI_API_KEY` in the
+existing Worker's **Settings → Variables and Secrets**. The frontend calls
+the same-origin API automatically; no VITE URL or second Worker required.
+
+`[assets].run_worker_first = ["/api/assistant/*"]` ensures these routes
+return JSON rather than the SPA's index.html fallback. Do not enable
+`run_worker_first = true` unnecessarily; regular assets remain asset-first.

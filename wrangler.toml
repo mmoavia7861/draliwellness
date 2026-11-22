@@ -1,11 +1,16 @@
 name = "draliwellness"
+main = "workers/site-with-ai.js"
 compatibility_date = "2026-11-22"
 workers_dev = true
 
-# Entire Vite storefront: build with `bun run build` before deployment.
-# Deploy with `npx wrangler deploy` from the repository root.
-# Cloudflare serves static assets directly; /admin and other React routes
-# fall back to index.html, allowing client-side routing.
+# Vite frontend and Gemini AI Guide share this single Worker.
+# Website static assets stay on Cloudflare's asset-serving path.
+# Route AI requests through the Worker script before SPA HTML fallback.
 [assets]
 directory = "./dist"
+binding = "ASSETS"
 not_found_handling = "single-page-application"
+run_worker_first = ["/api/assistant/*"]
+
+# GEMINI_API_KEY is a Cloudflare Worker Secret added in the dashboard.
+# NEVER place it in this file or in any VITE_ environment variable.
