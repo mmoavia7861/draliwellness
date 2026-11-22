@@ -23,7 +23,7 @@ export function generateTrackingId(): string {
 }
 
 export function normalizeTrackingId(input: string): string | null {
-  const value = input.trim().toUpperCase().replace(/\\s+/g, '');
+  const value = input.trim().toUpperCase().replace(/\s+/g, '');
   // Existing records use a SHA-256 document ID derived from order+email.
   // Permit their ID (without collecting an email again) for backward links.
   if (TRACKING_ID_PATTERN.test(value)) return value;
