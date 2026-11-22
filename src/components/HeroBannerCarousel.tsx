@@ -10,7 +10,7 @@ const assetUrl = (url: string): string => `${import.meta.env.BASE_URL}${url.repl
 
 const FEATURED_ENERGY_BOOST_BANNER: HeroBannerSlide = {
   id: 'brainaxis-energy-boost-hero-2026',
-  imageUrl: assetUrl('/assets/aistudio/brainaxis-energy-boost-owner-banner-20261122.avif'),
+  imageUrl: assetUrl('/assets/aistudio/brainaxis-energyboost-hd-20261122.webp'),
   alt: 'BrainAxis Energy Boost — premium multivitamin and mineral formula, Dr. Ali Hassan Health & Wellness hero banner',
   to: '/product/brainaxis-energy-boost',
 };
@@ -55,7 +55,8 @@ export const HeroBannerCarousel: React.FC = () => {
   const [unavailableImages, setUnavailableImages] = useState<string[]>([]);
   const isRetiredBanner = (url: string) =>
     url.includes('brainaxis-energy-boost-hero-banner.webp') ||
-    url.includes('brainaxis-energy-boost-hero-20261122.png');
+    url.includes('brainaxis-energy-boost-hero-20261122.png') ||
+    url.includes('brainaxis-energy-boost-owner-banner-20261122.avif');
   const savedFeatured = slides.find((slide) => slide.id === FEATURED_ENERGY_BOOST_BANNER.id);
   const featuredSlide = savedFeatured && !isRetiredBanner(savedFeatured.imageUrl)
     ? savedFeatured
