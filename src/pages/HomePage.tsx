@@ -16,6 +16,7 @@ import { PageMeta } from '../components/PageMeta';
 import { BrandLogo } from '../components/BrandLogo';
 import { HeroBannerCarousel } from '../components/HeroBannerCarousel';
 import { formatPkr } from '../utils/commerce';
+import { FOUNDER_BIO_PARAGRAPHS, FOUNDER_VISION_TAGLINE } from '../content/founderBiography';
 
 export const HomePage: React.FC = () => {
   const { liveProducts, siteSettings, services, reviews, journalPosts } = useStore();
@@ -350,13 +351,11 @@ export const HomePage: React.FC = () => {
               <p className="text-sm font-medium text-[#174D40]/85">{siteSettings.founderTitle}</p>
             )}
             <p className="text-base text-[#252B29]/80 leading-relaxed">
-              {siteSettings.founderBio}
+              {FOUNDER_BIO_PARAGRAPHS[0]}
             </p>
-            {siteSettings.founderMission && (
-              <p className="text-sm text-[#252B29]/75 italic border-t border-[#174D40]/12 pt-4">
-                “{siteSettings.founderMission}”
-              </p>
-            )}
+            <p className="text-sm text-[#252B29]/75 italic border-t border-[#174D40]/12 pt-4">
+              “{FOUNDER_VISION_TAGLINE}”
+            </p>
             <div className="pt-2 flex flex-wrap items-center gap-3">
               <Link
                 to="/about"
