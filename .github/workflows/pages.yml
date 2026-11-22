@@ -75,6 +75,25 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+      - name: Diagnose custom domain and Cloudflare Worker availability
+        if: always()
+        shell: bash
+        run: |
+          echo "DNS/HTTP diagnostics are informational; DNS migration is managed in Cloudflare/Spaceship."
+          for host in draliwellness.com www.draliwellness.com; do
+            echo "::group::DNS and HTTPS: ${host}"
+            getent ahostsv4 "$host" | head -n 4 || true
+            curl --silent --show-error --location --output /dev/null \
+              --connect-timeout 5 --max-time 12 \
+              --write-out 'HTTP: %{http_code}; final: %{url_effective}; remote IP: %{remote_ip}\\n' \
+              "https://${host}/" || true
+            echo "::endgroup::"
+          done
+          echo "::group::Cloudflare Worker API status"
+          curl --silent --show-error --connect-timeout 5 --max-time 12 \
+            "https://draliwellness.moavia400.workers.dev/api/orders/notification-status" || true
+          echo
+          echo "::endgroup::"
       - name: Verify deployed homepage and JavaScript
         env:
           SITE_URL: ${{ steps.deployment.outputs.page_url }}
