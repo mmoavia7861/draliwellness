@@ -29,6 +29,13 @@ jobs:
         run: bun install --frozen-lockfile
       - name: Type-check storefront and admin
         run: bun run lint
+      - name: Run storefront business-logic unit tests
+        run: bun test src/utils/commerce.test.ts src/utils/admin.test.ts src/utils/assistant.test.ts src/utils/studio.test.ts
+      - name: Check Worker API modules parse
+        run: |
+          node --check workers/site-with-ai.js
+          node --check workers/safepay.js
+          node --check workers/order-notifications.js
       - name: Build GitHub Pages version
         env:
           GITHUB_PAGES: 'true'
@@ -37,6 +44,26 @@ jobs:
         run: |
           bun run build
           cp dist/index.html dist/404.html
+      - name: Validate sitemap, robots, and built assets
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from urllib.parse import urlparse
+          import xml.etree.ElementTree as ET
+
+          output = Path('dist')
+          sitemap = output / 'sitemap.xml'
+          robots = output / 'robots.txt'
+          assert (output / 'index.html').is_file(), 'Homepage was not built'
+          assert sitemap.is_file(), 'Sitemap missing'
+          assert robots.is_file(), 'Robots directives missing'
+          ns = '{http://www.sitemaps.org/schemas/sitemap/0.9}'
+          urls = [element.text for element in ET.parse(sitemap).iter(ns + 'loc')]
+          assert len(urls) >= 2, 'Sitemap has no useful URLs'
+          assert all(url and urlparse(url).scheme == 'https' and urlparse(url).netloc == 'draliwellness.com' for url in urls), 'Sitemap URLs must be canonical and absolute'
+          assert 'Sitemap: https://draliwellness.com/sitemap.xml' in robots.read_text(), 'Robots sitemap reference missing'
+          print(f'Validated {len(urls)} canonical sitemap URLs and robots.txt.')
+          PY
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - name: Upload Pages artifact
