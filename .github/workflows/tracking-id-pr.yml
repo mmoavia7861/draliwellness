@@ -1,0 +1,31 @@
+name: Validate ID-only Order Tracking
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.4'
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Typecheck
+        run: bun run lint
+      - name: Business logic tests
+        run: bun test src/utils/commerce.test.ts src/utils/admin.test.ts src/utils/assistant.test.ts src/utils/studio.test.ts
+      - name: Build storefront
+        run: bun run build
+      - name: Validate Worker
+        run: |
+          node --check workers/site-with-ai.js
+          node --check workers/order-notifications.js
+          node --check workers/order-email-details.js
