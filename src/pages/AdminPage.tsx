@@ -937,6 +937,18 @@ export const AdminPage: React.FC = () => {
                           <p className="font-semibold text-[#174D40] tabular-nums">
                             {ord.orderNumber}
                           </p>
+                          <p className="text-[11px] text-[#252B29]/70 font-mono break-all">
+                            Customer Tracking ID: {ord.trackingKey}
+                          </p>
+                          <button
+                            type="button"
+                            className="text-xs text-[#174D40] underline cursor-pointer"
+                            onClick={() => void navigator.clipboard.writeText(
+                              `https://draliwellness.com/track-order?id=${encodeURIComponent(ord.trackingKey)}`
+                            )}
+                          >
+                            Copy customer tracking link
+                          </button>
                           <p className="text-xs text-[#252B29]/70">
                             {ord.customerName} · {ord.customerPhone} · {ord.customerEmail}
                           </p>
