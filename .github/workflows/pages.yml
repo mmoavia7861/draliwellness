@@ -37,6 +37,7 @@ jobs:
         run: |
           node --check workers/site-with-ai.js
           node --check workers/order-notifications.js
+          node --check workers/order-email-details.js
       - name: Build GitHub Pages version
         env:
           GITHUB_PAGES: 'true'
