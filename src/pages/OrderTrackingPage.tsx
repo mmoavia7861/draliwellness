@@ -5,33 +5,39 @@ import { useStore } from '../context/StoreContext';
 import { PageMeta } from '../components/PageMeta';
 import type { OrderTracking } from '../types';
 import { formatPkr, getOrderStatusLabel, ORDER_STATUS_STEPS } from '../utils/commerce';
+import { computeTrackingKey, normalizeTrackingId } from '../utils/tracking';
 
 export const OrderTrackingPage: React.FC = () => {
   const { trackOrder, siteSettings } = useStore();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const [orderNumber, setOrderNumber] = useState(searchParams.get('order') ?? '');
-  const [email, setEmail] = useState(searchParams.get('email') ?? '');
+  const [trackingId, setTrackingId] = useState(searchParams.get('id') ?? '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState<OrderTracking | null>(null);
 
-  const performLookup = async (ord: string, eml: string) => {
-    if (!ord.trim() || !eml.trim()) {
-      setError('Please enter both your Order Number and Checkout Email Address.');
+  const performLookup = async (id: string) => {
+    const cleanId = normalizeTrackingId(id);
+    if (!cleanId) {
+      setResult(null);
+      setError('Enter the Tracking ID provided when your order was placed.');
       return;
     }
     setError('');
     setLoading(true);
     try {
-      const found = await trackOrder(ord, eml);
+      const found = await trackOrder(cleanId);
       if (!found) {
         setResult(null);
-        setError('No matching order found. Please verify your Order Number and Email Address.');
+        setError('Tracking ID not found. Check the ID or contact support.');
       } else {
         setResult(found);
+        setTrackingId(cleanId);
+        // A shareable link without the checkout email.
+        setSearchParams({ id: cleanId }, { replace: true });
       }
     } catch {
+      setResult(null);
       setError('Unable to look up order status right now. Please try again.');
     } finally {
       setLoading(false);
@@ -39,16 +45,29 @@ export const OrderTrackingPage: React.FC = () => {
   };
 
   useEffect(() => {
-    const qOrder = searchParams.get('order');
-    const qEmail = searchParams.get('email');
-    if (qOrder && qEmail) {
-      void performLookup(qOrder, qEmail);
+    const id = searchParams.get('id');
+    if (id) {
+      void performLookup(id);
+      return;
+    }
+    // Open previously shared links without requiring the customer to re-enter
+    // their email. Convert the old order+email URL into a private ID-only link.
+    const legacyOrder = searchParams.get('order');
+    const legacyEmail = searchParams.get('email');
+    if (legacyOrder && legacyEmail) {
+      void computeTrackingKey(legacyOrder, legacyEmail)
+        .then((oldId) => {
+          setTrackingId(oldId);
+          setSearchParams({ id: oldId }, { replace: true });
+          return performLookup(oldId);
+        })
+        .catch(() => setError('This older tracking link could not be opened.'));
     }
   }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    void performLookup(orderNumber, email);
+    void performLookup(trackingId);
   };
 
   const currentStepIdx = result ? ORDER_STATUS_STEPS.indexOf(result.status) : -1;
@@ -57,19 +76,19 @@ export const OrderTrackingPage: React.FC = () => {
     <>
       <PageMeta
         title={`Track Your Order — ${siteSettings.businessName}`}
-        description="Track your BrainAxis supplement order using your order reference and checkout email verification."
+        description="Track your BrainAxis supplement order securely using your tracking ID only."
       />
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12 space-y-8">
         <div className="space-y-2 text-center">
           <p className="text-xs font-semibold uppercase tracking-widest text-[#C7A46A]">
-            Verified Order Lookup
+            Secure Tracking ID Lookup
           </p>
           <h1 className="font-serif text-3xl sm:text-4xl font-semibold text-[#174D40]">
             Track Your Order
           </h1>
           <p className="text-sm text-[#252B29]/75">
-            Enter your Order Reference and the email address used at checkout to verify and view fulfillment status.
+            Enter your Tracking ID to see your order, payment and delivery status. No email is required.
           </p>
         </div>
 
@@ -77,36 +96,24 @@ export const OrderTrackingPage: React.FC = () => {
           onSubmit={handleSubmit}
           className="bg-white border border-[#174D40]/12 rounded-2xl p-6 sm:p-8 space-y-4"
         >
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label htmlFor="track-order-num" className="text-xs font-semibold text-[#252B29]">
-                Order Number *
-              </label>
-              <input
-                id="track-order-num"
-                type="text"
-                required
-                value={orderNumber}
-                onChange={(e) => setOrderNumber(e.target.value)}
-                placeholder="e.g. DRH-261120-1234"
-                className="w-full h-11 px-3.5 rounded-lg border border-[#174D40]/20 bg-[#FAF8F2] text-sm uppercase"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label htmlFor="track-email" className="text-xs font-semibold text-[#252B29]">
-                Checkout Email Address *
-              </label>
-              <input
-                id="track-email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                className="w-full h-11 px-3.5 rounded-lg border border-[#174D40]/20 bg-[#FAF8F2] text-sm"
-              />
-            </div>
+          <div className="space-y-1">
+            <label htmlFor="tracking-id" className="text-xs font-semibold text-[#252B29]">
+              Tracking ID *
+            </label>
+            <input
+              id="tracking-id"
+              type="text"
+              required
+              autoComplete="off"
+              value={trackingId}
+              onChange={(e) => setTrackingId(e.target.value)}
+              placeholder="e.g. TRK-XXXXXXXXXXXXXXXXXXXX"
+              className="w-full h-11 px-3.5 rounded-lg border border-[#174D40]/20 bg-[#FAF8F2] text-sm uppercase"
+            />
+            <p className="text-xs text-[#252B29]/60">
+              You can find this ID on the order confirmation screen. If you
+              placed an earlier order and do not have a tracking link, contact support.
+            </p>
           </div>
 
           {error && (
