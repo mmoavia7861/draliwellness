@@ -355,7 +355,7 @@ export const HomePage: React.FC = () => {
             </p>
             <p className="text-sm text-[#252B29]/75 italic border-t border-[#174D40]/12 pt-4">
               “{FOUNDER_VISION_TAGLINE}”
-            </p>}
+            </p>
             <div className="pt-2 flex flex-wrap items-center gap-3">
               <Link
                 to="/about"
