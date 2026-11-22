@@ -870,6 +870,24 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         batch.set(doc(db, 'orderTracking', trackingKey), trackingDocData);
         batch.set(doc(db, 'orders', orderId), orderDocData);
         await batch.commit();
+        // Transactional owner notification: best-effort, never blocks a valid
+        // Firestore order if the external mail service is unavailable.
+        try {
+          const notificationApiUrl =
+            import.meta.env.VITE_ORDER_NOTIFICATION_API_URL?.trim() ||
+            'https://draliwellness.moavia400.workers.dev/api/orders/notify';
+          const notifyResponse = await fetch(notificationApiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ orderNumber, email: values.customerEmail.trim().toLowerCase() }),
+            signal: AbortSignal.timeout(3500),
+          });
+          if (!notifyResponse.ok) {
+            console.warn('Order was saved, but the owner notification could not be delivered.');
+          }
+        } catch {
+          console.warn('Order was saved, but the notification endpoint was unavailable.');
+        }
         clearCart();
         return {
           ...orderDocData,

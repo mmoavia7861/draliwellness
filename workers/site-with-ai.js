@@ -4,6 +4,7 @@
  * Keep the 410 response to avoid serving the SPA for stale AI URLs.
  */
 import { safepayRouter } from './safepay.js';
+import { orderMailRouter } from './order-notifications.js';
 
 export default {
   async fetch(request, env) {
@@ -19,6 +20,9 @@ export default {
     }
     if (path.startsWith('/api/payments/safepay/')) {
       return safepayRouter(request, env);
+    }
+    if (path.startsWith('/api/orders/')) {
+      return orderMailRouter(request, env);
     }
     if (path.startsWith('/api/')) {
       return new Response(JSON.stringify({ error: 'API route not found.' }), {
