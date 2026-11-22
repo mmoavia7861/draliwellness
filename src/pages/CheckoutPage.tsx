@@ -6,6 +6,8 @@ import { PageMeta } from '../components/PageMeta';
 import type { Order } from '../types';
 import { calculateCartTotals, checkoutSchema, formatPkr } from '../utils/commerce';
 
+const PAYMENT_API_BASE = (import.meta.env.VITE_PAYMENT_API_BASE_URL || 'https://draliwellness.moavia400.workers.dev').replace(/\/$/, '');
+
 export const CheckoutPage: React.FC = () => {
   const { cart, siteSettings, appliedCoupon, user, userProfile, placeOrder } = useStore();
 
@@ -30,7 +32,7 @@ export const CheckoutPage: React.FC = () => {
 
   useEffect(() => {
     const controller = new AbortController();
-    fetch('/api/payments/safepay/status', { signal: controller.signal })
+    fetch(PAYMENT_API_BASE + '/api/payments/safepay/status', { signal: controller.signal })
       .then((r) => r.headers.get('content-type')?.includes('application/json') ? r.json() : null)
       .then((result: {enabled?:boolean;environment?:'sandbox'|'production'} | null) => {
         if (result?.enabled === true) {
@@ -90,10 +92,18 @@ export const CheckoutPage: React.FC = () => {
         // Keep a saved, pending order for a retry without creating duplicates.
         const order = pendingSafepayOrder.current ?? await placeOrder(parsed.data);
         pendingSafepayOrder.current = order;
-        const response = await fetch('/api/payments/safepay/checkout', {
+        const response = await fetch(PAYMENT_API_BASE + '/api/payments/safepay/checkout', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({orderId: order.id, email:order.customerEmail}),
+          body: JSON.stringify({
+            orderId: order.id, email:order.customerEmail,
+            items:order.items.map(item => ({
+              productId:item.productId,
+              variantLabel:item.variantLabel || '',quantity:item.quantity,
+            })),
+            couponCode:order.couponCode || '',
+            returnOrigin:window.location.origin,
+          }),
         });
         const result = response.headers.get('content-type')?.includes('application/json')
           ? (await response.json()) as {checkoutUrl?:string;error?:string}

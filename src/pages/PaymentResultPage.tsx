@@ -4,6 +4,8 @@ import { PageMeta } from '../components/PageMeta';
 
 type PaymentInfo = {orderNumber?:string;paymentStatus?:'pending'|'paid'|'failed'|'refunded';orderStatus?:string;testPaid?:boolean};
 
+const PAYMENT_API_BASE = (import.meta.env.VITE_PAYMENT_API_BASE_URL || 'https://draliwellness.moavia400.workers.dev').replace(/\/$/, '');
+
 export const PaymentResultPage: React.FC = () => {
   const [search] = useSearchParams();
   const orderId = search.get('order') || '';
@@ -17,7 +19,7 @@ export const PaymentResultPage: React.FC = () => {
     setChecking(true);
     setError('');
     try{
-      const response=await fetch('/api/payments/safepay/order-status', {
+      const response=await fetch(PAYMENT_API_BASE + '/api/payments/safepay/order-status', {
         method: 'POST', headers: {'Content-Type':'application/json'},
         body: JSON.stringify({order:orderId,email:email.trim()})
       });

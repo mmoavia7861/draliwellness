@@ -11,3 +11,10 @@ not_found_handling = "single-page-application"
 run_worker_first = ["/api/*"]
 
 # No AI secret is read by this Worker. The stored secret can be revoked separately.
+
+# Safepay payment sessions and webhook audit trail; never stores card details.
+[[d1_databases]]
+binding = "PAYMENTS_DB"
+database_name = "draliwellness-payments"
+database_id = "ec0fd0f9-026a-4d88-ace3-d7e1c79dc1e4"
+migrations_dir = "migrations"
