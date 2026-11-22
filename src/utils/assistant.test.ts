@@ -42,7 +42,7 @@ test('buildAssistantSystemInstruction grounds prompt in BrainAxis catalog and sa
   const instruction = buildAssistantSystemInstruction(products, site);
 
   assert.ok(instruction.includes('BrainAxis Energy Boost'));
-  assert.ok(instruction.includes('Rs. 1,490'));
+  assert.ok(instruction.includes(`Rs. ${LAUNCH_PRODUCTS[0].pricePkr.toLocaleString('en-PK')}`));
   assert.ok(instruction.includes('SUNDEX-D'));
   assert.ok(instruction.includes('200,000 IU'));
   assert.ok(instruction.includes('Rs. 799'));
