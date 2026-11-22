@@ -5,6 +5,7 @@ import { useStore } from '../context/StoreContext';
 import { PageMeta } from '../components/PageMeta';
 import type { Order } from '../types';
 import { calculateCartTotals, checkoutSchema, formatPkr } from '../utils/commerce';
+import { normalizePakistanWhatsAppPhone } from '../utils/tracking';
 
 // Merchant-provided receiving number. Both wallets must be verified by owner before collecting payment.
 const WALLET_RECEIVING_NUMBER = '03486287055';
@@ -32,6 +33,7 @@ export const CheckoutPage: React.FC = () => {
   const [postalCode, setPostalCode] = useState(savedAddr?.postalCode || '');
   const [notes, setNotes] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'cod' | 'whatsapp' | 'easypaisa' | 'jazzcash'>('cod');
+  const [whatsappOptIn, setWhatsappOptIn] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -77,6 +79,7 @@ export const CheckoutPage: React.FC = () => {
       postalCode,
       notes,
       paymentMethod,
+      whatsappOptIn,
     });
 
     if (!parsed.success) {
@@ -86,6 +89,11 @@ export const CheckoutPage: React.FC = () => {
         nextErrors[key] = issue.message;
       }
       setErrors(nextErrors);
+      return;
+    }
+
+    if (whatsappOptIn && !normalizePakistanWhatsAppPhone(customerPhone)) {
+      setErrors({ customerPhone: 'Enter a valid Pakistani mobile / WhatsApp number (03XXXXXXXXX).' });
       return;
     }
 
@@ -186,6 +194,14 @@ export const CheckoutPage: React.FC = () => {
               ))}
             </ul>
           </div>
+
+          {confirmedOrder.whatsappOptIn && (
+            <p className="text-sm text-[#174D40]">
+              You requested a WhatsApp Yes / No confirmation. If messaging is enabled,
+              the request will be sent to the phone number provided at checkout.
+              Please respond in WhatsApp if you receive it.
+            </p>
+          )}
 
           <div className="flex flex-wrap gap-3 pt-2">
             <Link
@@ -375,6 +391,24 @@ export const CheckoutPage: React.FC = () => {
                   />
                 </div>
               </div>
+
+              <label className="flex items-start gap-3 rounded-xl border border-[#174D40]/20 bg-[#E8F1EB]/50 p-4 cursor-pointer">
+                <input
+                  type="checkbox"
+                  id="whatsapp-order-opt-in"
+                  checked={whatsappOptIn}
+                  onChange={(e) => setWhatsappOptIn(e.target.checked)}
+                  className="mt-1"
+                />
+                <span className="text-sm text-[#252B29]">
+                  <span className="block font-semibold text-[#174D40]">WhatsApp order confirmation</span>
+                  <span className="block text-xs mt-1">
+                    I agree to receive a one-time WhatsApp message on this phone number
+                    asking whether I want to confirm or cancel this order (Yes / No).
+                    This is optional and not marketing consent.
+                  </span>
+                </span>
+              </label>
 
               {/* Payment Method */}
               <div className="space-y-3 pt-4 border-t border-[#174D40]/10">
