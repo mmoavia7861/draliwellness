@@ -25,6 +25,7 @@ export const AdminCmsPanel: React.FC<AdminCmsPanelProps> = ({
 }) => {
   const [saving, setSaving] = useState(false);
   const [uploadingFounderPhoto, setUploadingFounderPhoto] = useState(false);
+  const [uploadingBannerId, setUploadingBannerId] = useState<string | null>(null);
   const [error, setError] = useState('');
 
   const banners = cmsDraft.banners ?? [];
@@ -74,6 +75,58 @@ export const AdminCmsPanel: React.FC<AdminCmsPanelProps> = ({
     }
   };
 
+  const handleBannerUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+    bannerId: string
+  ) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+
+    setError('');
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      setError('Banner must be a JPG, PNG or WebP image.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Banner image must be smaller than 5 MB.');
+      return;
+    }
+    const admin = auth.currentUser;
+    if (!admin || !admin.emailVerified) {
+      setError('Sign in with a verified admin email before uploading a banner.');
+      return;
+    }
+
+    setUploadingBannerId(bannerId);
+    try {
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-').slice(-90);
+      const imagePath = `product-images/${admin.uid}/banner-${Date.now()}-${safeName}`;
+      const uploaded = await uploadBytes(ref(storage, imagePath), file, {
+        contentType: file.type,
+        cacheControl: 'public,max-age=86400',
+      });
+      const imageUrl = await getDownloadURL(uploaded.ref);
+      setCmsDraft((previous) => ({
+        ...previous,
+        banners: (previous.banners ?? []).map((banner) =>
+          banner.id === bannerId ? { ...banner, imageUrl } : banner
+        ),
+      }));
+    } catch (err) {
+      const code = (err as { code?: string } | null)?.code || '';
+      setError(
+        code.includes('unauthorized')
+          ? 'Banner upload denied. Check Firebase Storage rules and your authorized admin account.'
+          : code.includes('bucket-not-found')
+            ? 'Firebase Storage is not configured. Enable Storage before uploading.'
+            : err instanceof Error ? err.message : 'Could not upload banner image.'
+      );
+    } finally {
+      setUploadingBannerId(null);
+    }
+  };
+
   const updatePolicy = (key: keyof SitePolicies, value: string) => {
     setCmsDraft({
       ...cmsDraft,
@@ -97,8 +150,8 @@ export const AdminCmsPanel: React.FC<AdminCmsPanelProps> = ({
     <form
       onSubmit={async (e) => {
         e.preventDefault();
-        if (uploadingFounderPhoto) {
-          setError('Finish uploading the founder photo before saving CMS changes.');
+        if (uploadingFounderPhoto || uploadingBannerId) {
+          setError('Finish uploading all images before saving CMS changes.');
           return;
         }
         setSaving(true);
@@ -124,7 +177,7 @@ export const AdminCmsPanel: React.FC<AdminCmsPanelProps> = ({
         </div>
         <button
           type="submit"
-          disabled={saving || uploadingFounderPhoto}
+          disabled={saving || uploadingFounderPhoto || uploadingBannerId !== null}
           className="h-10 px-6 rounded-lg bg-[#174D40] text-white text-xs font-semibold hover:bg-[#113A30] disabled:opacity-60 cursor-pointer"
         >
           {saving ? 'Saving...' : 'Save All CMS Changes'}
@@ -282,6 +335,22 @@ export const AdminCmsPanel: React.FC<AdminCmsPanelProps> = ({
                     }}
                     className="w-full h-9 px-2.5 rounded-lg border border-[#174D40]/20 bg-white text-xs"
                   />
+                  <label className="block text-[11px] font-semibold pt-1">
+                    Upload banner image (JPG, PNG, WebP, max 5 MB)
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    disabled={uploadingBannerId !== null || saving}
+                    onChange={(event) => void handleBannerUpload(event, banner.id)}
+                    className="block w-full text-[11px] file:mr-2 file:rounded file:border-0 file:bg-[#174D40] file:px-2 file:py-1 file:text-white"
+                  />
+                  {uploadingBannerId === banner.id && (
+                    <p role="status" className="text-[11px] text-[#174D40]">Uploading banner…</p>
+                  )}
+                  <p className="text-[11px] text-[#252B29]/65">
+                    After uploading, click Save All CMS Changes to publish.
+                  </p>
                 </div>
                 <div className="sm:col-span-4 space-y-1">
                   <label className="text-[11px] font-semibold">Alt Description</label>
