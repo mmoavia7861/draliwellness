@@ -50,17 +50,15 @@ export const HeroBannerCarousel: React.FC = () => {
       ? siteSettings.banners.filter((b) => Boolean(b.imageUrl))
       : HERO_BANNER_SLIDES;
 
-  // Override stale Firestore banner URLs with the owner-approved replacement.
-  // Skip an unavailable image so no broken banner appears before assets deploy.
+  // The owner can replace banners from the admin CMS. Never override saved
+  // Firebase Storage URLs with a hardcoded image or reintroduce retired artwork.
   const [unavailableImages, setUnavailableImages] = useState<string[]>([]);
-  const effectiveSlides = [
-    FEATURED_ENERGY_BOOST_BANNER,
-    ...slides.filter((slide) =>
-      slide.id !== FEATURED_ENERGY_BOOST_BANNER.id &&
-      !slide.imageUrl?.includes('brainaxis-energy-boost-hero-banner.webp') &&
-      !slide.imageUrl?.includes('brainaxis-energy-boost-hero-20261122.png')
-    ),
-  ].filter((slide) => !unavailableImages.includes(slide.imageUrl));
+  const effectiveSlides = slides.filter((slide) =>
+    Boolean(slide.imageUrl) &&
+    !slide.imageUrl.includes('brainaxis-energy-boost-hero-banner.webp') &&
+    !slide.imageUrl.includes('brainaxis-energy-boost-hero-20261122.png') &&
+    !unavailableImages.includes(slide.imageUrl)
+  );
   const slideCount = effectiveSlides.length;
   const intervalMs = Math.min(60, Math.max(2, siteSettings.bannerIntervalSec || 5)) * 1000;
 
