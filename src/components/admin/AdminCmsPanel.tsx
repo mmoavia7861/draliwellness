@@ -388,16 +388,6 @@ export const AdminCmsPanel: React.FC<AdminCmsPanelProps> = ({
             />
             <span>Cash on Delivery (COD) Enabled</span>
           </label>
-          <label className="flex items-center gap-2 text-xs font-semibold cursor-pointer pt-4">
-            <input
-              type="checkbox"
-              checked={Boolean(cmsDraft.onlinePaymentsEnabled)}
-              onChange={(e) =>
-                setCmsDraft({ ...cmsDraft, onlinePaymentsEnabled: e.target.checked })
-              }
-            />
-            <span>Safepay Online Payments Enabled (only after merchant verification)</span>
-          </label>
         </div>
       </section>
 

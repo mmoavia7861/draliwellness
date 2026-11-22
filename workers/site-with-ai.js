@@ -3,7 +3,6 @@
  * AI Guide feature retired: do not call Gemini or expose AI endpoints.
  * Keep the 410 response to avoid serving the SPA for stale AI URLs.
  */
-import { safepayRouter } from './safepay.js';
 import { orderMailRouter } from './order-notifications.js';
 
 export default {
@@ -17,9 +16,6 @@ export default {
           'cache-control': 'no-store',
         },
       });
-    }
-    if (path.startsWith('/api/payments/safepay/')) {
-      return safepayRouter(request, env);
     }
     if (path.startsWith('/api/orders/')) {
       return orderMailRouter(request, env);

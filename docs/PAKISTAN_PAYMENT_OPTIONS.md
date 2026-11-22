@@ -6,8 +6,6 @@
 - WhatsApp order confirmation.
 - **Easypaisa — Manual Wallet Transfer**.
 - **JazzCash — Manual Wallet Transfer**.
-- Safepay remains sandbox-only and hidden until its separate online gateway
-  is actually enabled; do not set `SAFEPAY_ENABLED=true` for real payments.
 
 Merchant-provided receiving number for both wallet choices: **03486287055**.
 

@@ -217,7 +217,7 @@ service cloud.firestore {
         && isOptionalString(data, 'couponCode', 40)
         && data.shippingFeePkr is number && data.shippingFeePkr >= 0 && data.shippingFeePkr <= 100000
         && data.totalPkr is number && data.totalPkr >= 0 && data.totalPkr <= 10000000
-        && data.paymentMethod in ['cod', 'whatsapp', 'jazzcash', 'easypaisa', 'card', 'safepay']
+        && data.paymentMethod in ['cod', 'whatsapp', 'jazzcash', 'easypaisa', 'card']
         && data.paymentStatus in ['pending', 'paid', 'failed', 'refunded']
         && data.status in ['placed', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled']
         && isOptionalString(data, 'courierName', 80)

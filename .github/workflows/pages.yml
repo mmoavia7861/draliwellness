@@ -34,7 +34,6 @@ jobs:
       - name: Check Worker API modules parse
         run: |
           node --check workers/site-with-ai.js
-          node --check workers/safepay.js
           node --check workers/order-notifications.js
       - name: Build GitHub Pages version
         env:

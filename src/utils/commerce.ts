@@ -157,7 +157,7 @@ export const checkoutSchema = z.object({
   province: z.string().trim().optional(),
   postalCode: z.string().trim().optional(),
   notes: z.string().trim().max(500, 'Notes must be 500 characters or less.').optional(),
-  paymentMethod: z.enum(['cod', 'whatsapp', 'easypaisa', 'jazzcash', 'safepay']),
+  paymentMethod: z.enum(['cod', 'whatsapp', 'easypaisa', 'jazzcash']),
 });
 
 export type CheckoutFormValues = z.infer<typeof checkoutSchema>;

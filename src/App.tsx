@@ -28,7 +28,6 @@ import { ContactPage } from './pages/ContactPage';
 import { FaqPage } from './pages/FaqPage';
 import { PolicyPage } from './pages/PolicyPage';
 import { AdminPage } from './pages/AdminPage';
-import { PaymentResultPage } from './pages/PaymentResultPage';
 
 const ScrollToTop: React.FC = () => {
   const { pathname } = useLocation();
@@ -78,7 +77,6 @@ export default function App() {
                   element={<PolicyPage policyKey="refundPolicy" title="Refund & Return Policy" />}
                 />
                 <Route path="/admin" element={<AdminPage />} />
-                <Route path="/payment-result" element={<PaymentResultPage />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </main>
