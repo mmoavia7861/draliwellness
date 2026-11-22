@@ -1,70 +1,57 @@
-# Order Notification Emails — Dr. Ali Hassan Health & Wellness
+# Automatic order email alerts — Dr. Ali Hassan Health & Wellness
 
-The website now requests a transactional **owner notification email** after
-the customer's order is successfully saved to Firestore. This covers COD,
-WhatsApp-confirmation, Easypaisa and JazzCash manual orders. Payment status is explicitly
-**pending** in this email; it is not proof of card payment.
+The storefront stores an order in Firestore and sends a notification request to the Cloudflare Worker. The Worker sends the store owner an email through Resend. The alert is not proof of payment.
 
-The worker verifies a fresh, real order-tracking record in the existing
-Firebase project's named database before using Resend. This approach does
-**not** require a Firebase service-account JSON key or Google Cloud upgrade.
+## What the email includes
 
-## What is already implemented
+With full-detail notification enabled, each email includes order number, payment method (PAYMENT PENDING), customer name, email, phone, complete street address, city, province and postal code when supplied, each product and variant with quantity/unit price/line total, subtotal, coupon/discount, shipping, total payable and optional order notes.
 
-- Worker route `POST /api/orders/notify` validates an order number and email.
-- Worker independently computes the same hashed tracking ID as the storefront,
-  fetches the public/minimal Firestore `orderTracking` document, and verifies
-  order number, pending status, method and creation time (<15 min old).
-- Email sent from Resend, with an idempotency key per order, containing order
-  number, payment method, total, city, item summary and buyer email.
-- Email recipients/Resend key are *never* sourced from the visitor.
-- Email failure never undoes an already-saved Firebase order.
-- Existing COD, WhatsApp and manual wallet order storage remain unchanged.
-- `GET /api/orders/notification-status` returns JSON `{enabled:false}`
-  until all three email settings below exist in the Worker runtime.
-- The frontend uses `https://draliwellness.moavia400.workers.dev` for
-  notifications while the root domain may still be served by GitHub Pages.
-  Later, you may override with public build env `VITE_ORDER_NOTIFICATION_API_URL`.
+The browser does not supply these private fields to the email API. The server verifies a new Firestore orderTracking record and reads the matching private order with a dedicated read-only service account.
 
-## Activation steps (only 3 Worker runtime settings)
+## Configure four Cloudflare Worker runtime settings
 
-1. Create a [Resend](https://resend.com/) account and add the domain
-   `draliwellness.com` (or a dedicated sending subdomain).
-2. Add exactly the DNS records displayed by Resend to **Cloudflare DNS**
-   and verify the sending domain. Keep existing MX and other mail records.
-3. Create a Resend API Key with **send-only** permission if available.
-4. Cloudflare -> Workers & Pages -> `draliwellness` ->
-   Settings -> Runtime -> Variables and Secrets. Add:
-   
-   | Name | Type | Example/value |
-   |---|---|---|
-   | `RESEND_API_KEY` | Secret | Actual Resend API key (never share) |
-   | `ORDER_NOTIFICATION_FROM` | Plain text | `BrainAxis Orders <orders@draliwellness.com>` (after verifying domain) |
-   | `ORDER_NOTIFICATION_TO` | Secret | Your chosen inbox address that should receive order alerts |
-   
-   Do not use the **Builds** secrets section.
-5. Deploy / Save changes. Verify
-   `https://draliwellness.moavia400.workers.dev/api/orders/notification-status`
-   returns `{"enabled":true}`. This checks configuration only, NOT delivery.
-6. Place an actual **small test COD order** using the website while the
-   Firestore `orderTracking` data is accessible under its existing rules.
-   Check the destination Inbox and Spam, plus Resend Emails/Logs.
-   In case of errors, inspect Cloudflare Worker Logs. Unverified sending
-   domains / sandbox sending restrictions can prevent delivery.
+Go to Cloudflare -> Workers & Pages -> draliwellness -> Settings -> Variables and Secrets. Add under **Runtime**, not the Builds secrets area.
 
-## Safety and limitations
+1. RESEND_API_KEY (Secret): transactional Resend send-only API key.
+2. ORDER_NOTIFICATION_FROM (Plain text): e.g. BrainAxis Orders <orders@draliwellness.com>. Sender domain must be verified in Resend.
+3. ORDER_NOTIFICATION_TO (Secret): the owner's working inbox, e.g. current Gmail until the custom business mailbox exists.
+4. FIREBASE_SERVICE_ACCOUNT_JSON (Secret): full JSON for a dedicated read-only Google Cloud service account in the website's Firebase project.
 
-- A new order notification does not prove a manual wallet transfer was received. Verify any incoming payment separately before dispatch.
-- Resend's idempotency header helps prevent duplicate notifications for
-  24 hours; not a permanent global deduplication lock. The Worker only
-  accepts newly placed (within 15 minutes) order notifications.
-  Add Cloudflare WAF request rate limiting on `/api/orders/notify`
-  if abuse occurs or before large scale.
-- Owner emails deliberately exclude buyer street address and phone.
-  Review complete order details in the existing protected `/admin` page.
-- The Firestore client writes orders and `orderTracking` in one batch;
-  the Worker only reads the tracking document. If direct REST reads are
-  blocked by IAM/API policy, set up a trusted server read service rather
-  than opening private order documents to the public.
-- In the event the email fails, the order is **still saved in Firebase**.
-  Keep Admin orders as the source of truth for fulfillment.
+Never place these credentials in GitHub, chat, public frontend VITE_ variables, or build logs.
+
+### Resend sender setup
+
+Visit https://resend.com/domains and verify draliwellness.com (or a dedicated sending subdomain). Add the exact SPF and DKIM records required by Resend in Cloudflare DNS. Preserve current MX records for receiving mail. Sending from a verified domain does not itself create a receiving mailbox.
+
+### Read-only Firestore service account
+
+1. Open https://console.cloud.google.com/iam-admin/serviceaccounts and select the same project as this Firebase site.
+2. Create a dedicated service account, for example drali-order-alert-reader.
+3. Grant the **Cloud Datastore Viewer** (roles/datastore.viewer) role. Do NOT use Owner, Editor or Firebase Admin.
+4. In the service account's Keys page, create a JSON key only if organizational security policies allow it.
+5. Paste the *entire* JSON only into the Cloudflare Runtime Secret FIREBASE_SERVICE_ACCOUNT_JSON, never into a build variable or repository.
+6. Protect and rotate the key: even a read-only service account can read private customer data.
+
+### Activation check
+
+After saving settings, open:
+https://draliwellness.moavia400.workers.dev/api/orders/notification-status
+
+Expected when all four settings are present:
+```json
+{"enabled":true,"fullOrderDetailsEnabled":true}
+```
+
+If fullOrderDetailsEnabled is false, the Worker can only send the older minimal email summary. Presence of settings does not confirm provider delivery or valid permissions.
+
+### Test end to end
+
+Place one small COD test order. Verify order appears under /admin, then check the configured inbox and Spam for a new BrainAxis order email including full customer information and ordered items. Inspect Resend Email Logs and Cloudflare Workers Logs if delivery fails. Payments remain pending until merchant verification.
+
+## Security and reliability
+
+- Order documents and customer addresses must remain private in Firestore rules.
+- HTTP responses and console logs must never include private order contents or secrets.
+- Resend's idempotency key helps avoid duplicate alerts for the same order.
+- Notification delivery is best effort: the browser calls the Worker after a successful Firestore write, so an offline browser or provider outage can prevent email delivery. The order remains safely in Firebase admin. For guaranteed retries later, use a trusted Firestore trigger plus queue/retry processing.
+- This code change does not provision a mailbox or add real secrets automatically.
