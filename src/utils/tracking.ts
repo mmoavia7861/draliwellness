@@ -10,6 +10,16 @@ export async function computeTrackingKey(orderNumber: string, contact: string): 
   return bytes.map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
+/** Convert a Pakistani checkout mobile number to WhatsApp's international format. */
+export function normalizePakistanWhatsAppPhone(raw: string): string | null {
+  const digits = raw.replace(/[^0-9]/g, '');
+  if (/^03[0-9]{9}$/.test(digits)) return '92' + digits.slice(1);
+  if (/^923[0-9]{9}$/.test(digits)) return digits;
+  if (/^3[0-9]{9}$/.test(digits)) return '92' + digits;
+  if (/^00923[0-9]{9}$/.test(digits)) return digits.slice(2);
+  return null;
+}
+
 export function generateOrderNumber(now: Date = new Date()): string {
   const yy = String(now.getFullYear()).slice(-2);
   const mm = String(now.getMonth() + 1).padStart(2, '0');
