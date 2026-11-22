@@ -10,7 +10,7 @@ const assetUrl = (url: string): string => `${import.meta.env.BASE_URL}${url.repl
 
 const FEATURED_ENERGY_BOOST_BANNER: HeroBannerSlide = {
   id: 'brainaxis-energy-boost-hero-2026',
-  imageUrl: assetUrl('/assets/aistudio/brainaxis-energy-boost-owner-banner-20261122.webp'),
+  imageUrl: assetUrl('/assets/aistudio/brainaxis-energy-boost-owner-banner-20261122.avif'),
   alt: 'BrainAxis Energy Boost — premium multivitamin and mineral formula, Dr. Ali Hassan Health & Wellness hero banner',
   to: '/product/brainaxis-energy-boost',
 };

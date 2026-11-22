@@ -210,7 +210,7 @@ export const LAUNCH_SITE_SETTINGS: SiteSettings = {
   banners: [
     {
       id: 'brainaxis-energy-boost-hero-2026',
-      imageUrl: assetUrl('/assets/aistudio/brainaxis-energy-boost-owner-banner-20261122.webp'),
+      imageUrl: assetUrl('/assets/aistudio/brainaxis-energy-boost-owner-banner-20261122.avif'),
       alt: 'BrainAxis Energy Boost — premium multivitamin and mineral formula, Dr. Ali Hassan Health & Wellness hero banner',
       to: '/product/brainaxis-energy-boost',
     },
