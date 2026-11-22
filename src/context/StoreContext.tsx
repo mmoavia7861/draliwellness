@@ -60,7 +60,7 @@ import {
   type CheckoutFormValues,
 } from '../utils/commerce';
 import { sanitizeAdminMemberInput, sanitizeSiteSettingsForFirestore } from '../utils/admin';
-import { computeTrackingKey, generateOrderNumber } from '../utils/tracking';
+import { computeTrackingKey, generateOrderNumber, normalizePakistanWhatsAppPhone } from '../utils/tracking';
 import { handleFirestoreError, OperationType } from '../utils/firestoreErrors';
 
 const CART_STORAGE_KEY = 'dr_ali_hassan_cart_v1';
@@ -820,6 +820,17 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const orderNumber = generateOrderNumber();
       const orderId = sanitizeId(orderNumber);
       const trackingKey = await computeTrackingKey(orderNumber, values.customerEmail);
+      const whatsappPhone = values.whatsappOptIn
+        ? normalizePakistanWhatsAppPhone(values.customerPhone)
+        : null;
+      if (values.whatsappOptIn && !whatsappPhone) {
+        throw new Error('Enter a valid Pakistani mobile number for WhatsApp confirmation.');
+      }
+      // The publicly accessible tracking record contains only a one-way
+      // fingerprint of the destination, never the customer's phone number.
+      const whatsappPhoneHash = whatsappPhone
+        ? await computeTrackingKey(trackingKey, whatsappPhone)
+        : '';
       const userId = user?.uid ?? 'guest';
 
       const orderDocData = {
@@ -839,6 +850,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         subtotalPkr: totals.subtotalPkr,
         discountPkr: totals.discountPkr,
         couponCode: totals.appliedCouponCode || '',
+        whatsappOptIn: Boolean(values.whatsappOptIn),
         shippingFeePkr: totals.shippingFeePkr,
         totalPkr: totals.totalPkr,
         paymentMethod: values.paymentMethod,
@@ -859,6 +871,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         totalPkr: totals.totalPkr,
         itemCount: totals.itemCount,
         itemsSummary: verifiedItems.map((i) => `${i.name} × ${i.quantity}`).slice(0, 30),
+        ...(whatsappPhone ? { whatsappOptIn: true, whatsappPhoneHash } : {}),
         courierName: '',
         courierTrackingNo: '',
         createdAt: serverTimestamp(),
@@ -887,6 +900,29 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           }
         } catch {
           console.warn('Order was saved, but the notification endpoint was unavailable.');
+        }
+        if (whatsappPhone) {
+          // Best effort: never roll back a saved order if messaging is unavailable.
+          try {
+            const response = await fetch(
+              'https://draliwellness.moavia400.workers.dev/api/whatsapp/request',
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  orderNumber,
+                  email: values.customerEmail.trim().toLowerCase(),
+                  phone: whatsappPhone,
+                }),
+                signal: AbortSignal.timeout(3500),
+              }
+            );
+            if (!response.ok) {
+              console.warn('WhatsApp confirmation is not available for this order.');
+            }
+          } catch {
+            console.warn('WhatsApp confirmation endpoint was unavailable.');
+          }
         }
         clearCart();
         return {
