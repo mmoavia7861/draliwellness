@@ -12,7 +12,10 @@ const isManualWallet = (value: string) => value === 'easypaisa' || value === 'ja
 const walletLabel = (value: string) => value === 'easypaisa' ? 'Easypaisa' : 'JazzCash';
 
 export const CheckoutPage: React.FC = () => {
-  const { cart, siteSettings, appliedCoupon, user, userProfile, placeOrder } = useStore();
+  const {
+    cart, siteSettings, appliedCoupon, applyCouponCode, clearCoupon,
+    user, userProfile, placeOrder,
+  } = useStore();
 
   const savedAddr = userProfile?.addresses?.[0];
 
@@ -33,6 +36,9 @@ export const CheckoutPage: React.FC = () => {
   const [submitError, setSubmitError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [confirmedOrder, setConfirmedOrder] = useState<Order | null>(null);
+  const [couponInput, setCouponInput] = useState(appliedCoupon?.code ?? '');
+  const [couponMsg, setCouponMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [couponSubmitting, setCouponSubmitting] = useState(false);
 
   const totals = calculateCartTotals(
     cart,
@@ -40,6 +46,21 @@ export const CheckoutPage: React.FC = () => {
     siteSettings.freeShippingThresholdPkr,
     appliedCoupon
   );
+
+  const handleApplyCoupon = async () => {
+    if (couponSubmitting || submitting) return;
+    setCouponSubmitting(true);
+    setCouponMsg(null);
+    try {
+      const result = await applyCouponCode(couponInput);
+      setCouponMsg({ ok: result.ok, text: result.message });
+      if (result.ok) setCouponInput(couponInput.trim().toUpperCase());
+    } catch {
+      setCouponMsg({ ok: false, text: 'Unable to validate coupon right now.' });
+    } finally {
+      setCouponSubmitting(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -455,6 +476,68 @@ export const CheckoutPage: React.FC = () => {
                 ))}
               </ul>
 
+              <div className="space-y-3 border-t border-[#174D40]/10 pt-4">
+                <label htmlFor="checkout-coupon" className="block text-sm font-semibold text-[#252B29]">
+                  Promo / Coupon Code
+                </label>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <input
+                    id="checkout-coupon"
+                    type="text"
+                    value={couponInput}
+                    maxLength={40}
+                    autoComplete="off"
+                    onChange={(e) => {
+                      setCouponInput(e.target.value.toUpperCase());
+                      setCouponMsg(null);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        void handleApplyCoupon();
+                      }
+                    }}
+                    placeholder="Enter coupon code"
+                    aria-describedby="checkout-coupon-feedback"
+                    className="w-full min-w-0 flex-1 h-11 px-3 rounded-lg border border-[#174D40]/20 bg-[#FAF8F2] text-sm uppercase"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => void handleApplyCoupon()}
+                    disabled={couponSubmitting || submitting || !couponInput.trim()}
+                    className="h-11 px-5 rounded-lg bg-[#174D40] text-white text-sm font-semibold disabled:opacity-50 hover:bg-[#113A30] cursor-pointer"
+                  >
+                    {couponSubmitting ? 'Checking...' : 'Apply'}
+                  </button>
+                </div>
+                {appliedCoupon && (
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                    <span className="text-[#174D40] font-semibold">Applied: {appliedCoupon.code}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        clearCoupon();
+                        setCouponInput('');
+                        setCouponMsg(null);
+                      }}
+                      className="text-red-700 underline cursor-pointer"
+                    >
+                      Remove coupon
+                    </button>
+                  </div>
+                )}
+                <div id="checkout-coupon-feedback" aria-live="polite">
+                  {couponMsg && (
+                    <p className={`text-xs ${couponMsg.ok ? 'text-[#174D40]' : 'text-red-700'}`}>
+                      {couponMsg.text}
+                    </p>
+                  )}
+                  {totals.couponError && (
+                    <p className="text-xs text-red-700">{totals.couponError}</p>
+                  )}
+                </div>
+              </div>
+
               <div className="space-y-2 text-sm border-t border-[#174D40]/10 pt-4">
                 <div className="flex justify-between">
                   <span className="text-[#252B29]/75">Subtotal</span>
@@ -488,7 +571,7 @@ export const CheckoutPage: React.FC = () => {
 
               <button
                 type="submit"
-                disabled={submitting}
+                disabled={submitting || couponSubmitting}
                 className="w-full h-12 rounded-lg bg-[#174D40] text-white text-sm font-semibold hover:bg-[#113A30] disabled:opacity-60 transition-colors cursor-pointer"
               >
                 {submitting ? 'Processing...' : `Confirm Order (${formatPkr(totals.totalPkr)})`}
