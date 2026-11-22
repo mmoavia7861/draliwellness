@@ -7,7 +7,7 @@ import {
   formatPkr,
   getVisibleCategories,
 } from './commerce';
-import { computeTrackingKey } from './tracking';
+import { computeTrackingKey, normalizePakistanWhatsAppPhone } from './tracking';
 import { LAUNCH_CATEGORIES, LAUNCH_PRODUCTS } from '../data/launchCatalog';
 import type { CartItem, Category, Coupon, Product } from '../types';
 
@@ -146,4 +146,27 @@ test('computeTrackingKey produces deterministic case-insensitive verification ha
   const k2 = await computeTrackingKey('drh-261120-1234', ' customer@example.com ');
   assert.equal(k1, k2);
   assert.equal(k1.length, 64);
+});
+
+test('WhatsApp confirmation normalizes Pakistani checkout numbers only', () => {
+  assert.equal(normalizePakistanWhatsAppPhone('0300-1234567'), '923001234567');
+  assert.equal(normalizePakistanWhatsAppPhone('+92 300 1234567'), '923001234567');
+  assert.equal(normalizePakistanWhatsAppPhone('3001234567'), '923001234567');
+  assert.equal(normalizePakistanWhatsAppPhone('00923001234567'), '923001234567');
+  assert.equal(normalizePakistanWhatsAppPhone('1234'), null);
+  assert.equal(normalizePakistanWhatsAppPhone(''), null);
+});
+
+test('checkout only opts in to WhatsApp with explicit consent', () => {
+  const payload = {
+    customerName: 'Test Buyer',
+    customerEmail: 'buyer@example.com',
+    customerPhone: '03001234567',
+    shippingAddress: 'Street 12, Islamabad',
+    city: 'Islamabad',
+    paymentMethod: 'cod',
+  };
+  assert.equal(checkoutSchema.safeParse(payload).success, true);
+  assert.equal(checkoutSchema.safeParse({ ...payload, whatsappOptIn: true }).success, true);
+  assert.equal(checkoutSchema.safeParse({ ...payload, whatsappOptIn: 'true' }).success, false);
 });
