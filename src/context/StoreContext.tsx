@@ -60,7 +60,7 @@ import {
   type CheckoutFormValues,
 } from '../utils/commerce';
 import { sanitizeAdminMemberInput, sanitizeSiteSettingsForFirestore } from '../utils/admin';
-import { computeTrackingKey, generateOrderNumber } from '../utils/tracking';
+import { computeTrackingKey, generateOrderNumber, generateTrackingId, normalizeTrackingId } from '../utils/tracking';
 import { handleFirestoreError, OperationType } from '../utils/firestoreErrors';
 
 const CART_STORAGE_KEY = 'dr_ali_hassan_cart_v1';
@@ -129,7 +129,7 @@ interface StoreContextValue {
   removeAddress: (addressId: string) => Promise<void>;
 
   placeOrder: (values: CheckoutFormValues) => Promise<Order>;
-  trackOrder: (orderNumber: string, contact: string) => Promise<OrderTracking | null>;
+  trackOrder: (trackingId: string) => Promise<OrderTracking | null>;
   fetchMyOrders: () => Promise<Order[]>;
   fetchMyAppointments: () => Promise<Appointment[]>;
   cancelMyOrder: (orderId: string) => Promise<void>;
@@ -819,7 +819,11 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
       const orderNumber = generateOrderNumber();
       const orderId = sanitizeId(orderNumber);
-      const trackingKey = await computeTrackingKey(orderNumber, values.customerEmail);
+      // Customer-facing tracking IDs are random and independent of their email.
+      // Keep the existing email-derived lookup as a compatibility record for the
+      // already-deployed owner notification Worker and historical order links.
+      const trackingKey = generateTrackingId();
+      const notificationTrackingKey = await computeTrackingKey(orderNumber, values.customerEmail);
       const userId = user?.uid ?? 'guest';
 
       const orderDocData = {
@@ -868,6 +872,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       try {
         const batch = writeBatch(db);
         batch.set(doc(db, 'orderTracking', trackingKey), trackingDocData);
+        batch.set(doc(db, 'orderTracking', notificationTrackingKey), trackingDocData);
         batch.set(doc(db, 'orders', orderId), orderDocData);
         await batch.commit();
         // Transactional owner notification: best-effort, never blocks a valid
@@ -910,8 +915,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   );
 
   const trackOrder = useCallback(
-    async (orderNumber: string, contact: string): Promise<OrderTracking | null> => {
-      const key = await computeTrackingKey(orderNumber, contact);
+    async (trackingId: string): Promise<OrderTracking | null> => {
+      const key = normalizeTrackingId(trackingId);
+      if (!key) return null;
       try {
         const snap = await getDoc(doc(db, 'orderTracking', key));
         if (!snap.exists()) return null;
@@ -1252,14 +1258,26 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
         const trackingRef = doc(db, 'orderTracking', order.trackingKey);
         const trackingSnap = await getDoc(trackingRef);
+        const trackingChanges = {
+          status: nextStatus,
+          paymentStatus: nextPayment,
+          courierName: nextCourier.slice(0, 80),
+          courierTrackingNo: nextTrackingNo.slice(0, 80),
+          updatedAt: serverTimestamp(),
+        };
         if (trackingSnap.exists()) {
-          batch.update(trackingRef, {
-            status: nextStatus,
-            paymentStatus: nextPayment,
-            courierName: nextCourier.slice(0, 80),
-            courierTrackingNo: nextTrackingNo.slice(0, 80),
-            updatedAt: serverTimestamp(),
-          });
+          batch.update(trackingRef, trackingChanges);
+        }
+
+        // Keep the private order, customer-facing tracking ID and compatibility
+        // summary (read by the Resend notification Worker) in sync.
+        const compatibilityKey = await computeTrackingKey(order.orderNumber, order.customerEmail);
+        if (compatibilityKey !== order.trackingKey) {
+          const compatibilityRef = doc(db, 'orderTracking', compatibilityKey);
+          const compatibilitySnap = await getDoc(compatibilityRef);
+          if (compatibilitySnap.exists()) {
+            batch.update(compatibilityRef, trackingChanges);
+          }
         }
 
         await batch.commit();

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CheckCircle2, MessageCircle, Truck } from 'lucide-react';
+import { CheckCircle2, Copy, MessageCircle, Truck } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 import { PageMeta } from '../components/PageMeta';
 import type { Order } from '../types';
@@ -132,6 +132,25 @@ export const CheckoutPage: React.FC = () => {
               <p className="text-sm text-[#252B29]/80">
                 Reference: <strong className="tabular-nums">{confirmedOrder.orderNumber}</strong>
               </p>
+              <div className="mt-3 rounded-xl border border-[#174D40]/20 bg-[#E8F1EB] p-4 space-y-2">
+                <p className="text-xs font-semibold text-[#174D40]">Your Tracking ID</p>
+                <div className="flex flex-wrap items-center gap-3">
+                  <code className="text-sm font-bold tracking-wider break-all text-[#174D40]">
+                    {confirmedOrder.trackingKey}
+                  </code>
+                  <button
+                    type="button"
+                    aria-label="Copy tracking ID"
+                    onClick={() => void navigator.clipboard.writeText(confirmedOrder.trackingKey)}
+                    className="inline-flex items-center gap-1 text-xs underline font-semibold text-[#174D40] cursor-pointer"
+                  >
+                    <Copy className="w-4 h-4" /> Copy ID
+                  </button>
+                </div>
+                <p className="text-xs text-[#252B29]/75">
+                  Save this ID to track your order anytime. Checkout email is not required.
+                </p>
+              </div>
             </div>
           </div>
 
@@ -189,9 +208,7 @@ export const CheckoutPage: React.FC = () => {
 
           <div className="flex flex-wrap gap-3 pt-2">
             <Link
-              to={`/track-order?order=${encodeURIComponent(
-                confirmedOrder.orderNumber
-              )}&email=${encodeURIComponent(confirmedOrder.customerEmail)}`}
+              to={`/track-order?id=${encodeURIComponent(confirmedOrder.trackingKey)}`}
               className="h-11 px-6 rounded-lg bg-[#174D40] text-white text-sm font-semibold inline-flex items-center"
             >
               Track This Order

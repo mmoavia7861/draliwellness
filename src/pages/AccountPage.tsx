@@ -358,6 +358,12 @@ export const AccountPage: React.FC = () => {
                   <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#174D40]/10 pb-3">
                     <div>
                       <p className="font-semibold text-[#174D40] tabular-nums">{ord.orderNumber}</p>
+                      <Link
+                        to={`/track-order?id=${encodeURIComponent(ord.trackingKey)}`}
+                        className="text-xs text-[#174D40] underline break-all"
+                      >
+                        Track by ID: {ord.trackingKey}
+                      </Link>
                       <p className="text-xs text-[#252B29]/65">
                         {ord.city} · {ord.paymentMethod.toUpperCase()}
                       </p>
