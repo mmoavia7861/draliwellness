@@ -188,6 +188,7 @@ export interface Order {
   subtotalPkr: number;
   discountPkr?: number;
   couponCode?: string;
+  whatsappOptIn?: boolean;
   shippingFeePkr: number;
   totalPkr: number;
   paymentMethod: PaymentMethod;
@@ -208,6 +209,8 @@ export interface OrderTracking {
   totalPkr: number;
   itemCount?: number;
   itemsSummary?: string[];
+  whatsappOptIn?: boolean;
+  whatsappPhoneHash?: string;
   courierName?: string;
   courierTrackingNo?: string;
   createdAt?: unknown;
