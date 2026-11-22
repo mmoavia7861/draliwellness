@@ -65,7 +65,7 @@ import { handleFirestoreError, OperationType } from '../utils/firestoreErrors';
 
 const CART_STORAGE_KEY = 'dr_ali_hassan_cart_v1';
 const WISHLIST_STORAGE_KEY = 'dr_ali_hassan_wishlist_v1';
-const BOOTSTRAP_ADMIN_EMAIL = 'moavia400@gmail.com';
+const BOOTSTRAP_ADMIN_EMAIL = 'alihassan0260060@gmail.com';
 
 // Apply the current launch price to Firestore records still carrying the old seed.
 // Newer admin-edited prices remain unchanged.
