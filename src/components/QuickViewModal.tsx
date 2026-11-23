@@ -55,9 +55,16 @@ export const QuickViewModal: React.FC = () => {
               {p.name}
             </h2>
             {p.subtitle && <p className="text-sm font-medium text-[#174D40]">{p.subtitle}</p>}
-            <p className="text-xl font-semibold text-[#174D40] tabular-nums">
-              {formatPkr(p.pricePkr)}
-            </p>
+            <div className="flex flex-wrap items-baseline gap-2">
+              {typeof p.compareAtPricePkr === 'number' && p.compareAtPricePkr > p.pricePkr && (
+                <span className="text-sm text-[#252B29]/55 line-through tabular-nums" aria-label="Comparison price">
+                  {formatPkr(p.compareAtPricePkr)}
+                </span>
+              )}
+              <span className="text-xl font-semibold text-[#174D40] tabular-nums" aria-label="Current price">
+                {formatPkr(p.pricePkr)}
+              </span>
+            </div>
             {p.shortDescription && (
               <p className="text-sm text-[#252B29]/80 leading-relaxed">{p.shortDescription}</p>
             )}
