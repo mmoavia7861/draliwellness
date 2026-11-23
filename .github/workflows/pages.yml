@@ -45,6 +45,7 @@ jobs:
           VITE_ENABLE_AI_STUDIO: 'false'
         run: |
           bun run build
+          node scripts/generate-indexable-pages.mjs
           cp dist/index.html dist/404.html
       - name: Validate sitemap, robots, and built assets
         run: |
@@ -61,8 +62,15 @@ jobs:
           assert robots.is_file(), 'Robots directives missing'
           ns = '{http://www.sitemaps.org/schemas/sitemap/0.9}'
           urls = [element.text for element in ET.parse(sitemap).iter(ns + 'loc')]
-          assert len(urls) >= 2, 'Sitemap has no useful URLs'
+          assert len(urls) >= 8, 'Sitemap has fewer than eight indexable URLs'
           assert all(url and urlparse(url).scheme == 'https' and urlparse(url).netloc == 'draliwellness.com' for url in urls), 'Sitemap URLs must be canonical and absolute'
+          for url in urls:
+              parsed = urlparse(url)
+              route = parsed.path.strip('/')
+              page = output / route / 'index.html' if route else output / 'index.html'
+              assert page.is_file(), f'Missing route entry HTML: {page}'
+              html = page.read_text()
+              assert f'<link rel="canonical" href="{url}" />' in html, f'Canonical mismatch: {url}'
           assert 'Sitemap: https://draliwellness.com/sitemap.xml' in robots.read_text(), 'Robots sitemap reference missing'
           print(f'Validated {len(urls)} canonical sitemap URLs and robots.txt.')
           PY
