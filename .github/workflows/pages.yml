@@ -77,7 +77,7 @@ jobs:
               assert '<meta name="description" content=' in html, f'Page description missing: {url}'
               assert '<meta property="og:image" content=' in html, f'Social image missing: {url}'
               assert 'max-image-preview:large' in html, f'Robots image metadata missing: {url}'
-              schemas = re.findall(r'<script type="application/ld\\+json">([\\s\\S]*?)</script>', html)
+              schemas = re.findall(r'<script type="application/ld[+]json">(.*?)</script>', html, flags=re.S)
               assert len(schemas) == 1, f'Expected one structured-data graph: {url}'
               graph = json.loads(schemas[0]).get('@graph', [])
               types = [node.get('@type') for node in graph]
