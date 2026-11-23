@@ -16,7 +16,7 @@ export const AnnouncementBar: React.FC = () => {
         <p className="text-center font-medium tracking-wide truncate">
           {/free (?:nationwide )?delivery|free shipping/i.test(siteSettings.announcementText)
             ? siteSettings.announcementText
-            : `Free Delivery Across Pakistan · ${siteSettings.announcementText}`
+            : `Free Delivery Across Pakistan · ${siteSettings.announcementText}`}
         </p>
       </div>
       <button
