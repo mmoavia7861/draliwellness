@@ -423,31 +423,16 @@ export const AdminCmsPanel: React.FC<AdminCmsPanelProps> = ({
         </h3>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 items-center">
           <div className="space-y-1">
-            <label className="text-xs font-semibold">Standard Shipping Fee (PKR)</label>
-            <input
-              type="number"
-              min={0}
-              value={cmsDraft.shippingFeePkr}
-              onChange={(e) =>
-                setCmsDraft({ ...cmsDraft, shippingFeePkr: Number(e.target.value) || 0 })
-              }
-              className="w-full h-10 px-3 rounded-lg border border-[#174D40]/20 bg-[#FAF8F2] tabular-nums"
-            />
+            <p className="text-xs font-semibold">Nationwide Delivery</p>
+            <p className="h-10 px-3 flex items-center rounded-lg border border-[#174D40]/20 bg-[#E8F1EB] text-sm font-semibold text-[#174D40]">
+              Free (Rs. 0)
+            </p>
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-semibold">Free Shipping Threshold (PKR)</label>
-            <input
-              type="number"
-              min={0}
-              value={cmsDraft.freeShippingThresholdPkr}
-              onChange={(e) =>
-                setCmsDraft({
-                  ...cmsDraft,
-                  freeShippingThresholdPkr: Number(e.target.value) || 0,
-                })
-              }
-              className="w-full h-10 px-3 rounded-lg border border-[#174D40]/20 bg-[#FAF8F2] tabular-nums"
-            />
+            <p className="text-xs font-semibold">Minimum Order for Free Shipping</p>
+            <p className="h-10 px-3 flex items-center rounded-lg border border-[#174D40]/20 bg-[#E8F1EB] text-sm font-semibold text-[#174D40]">
+              No minimum
+            </p>
           </div>
           <label className="flex items-center gap-2 text-xs font-semibold cursor-pointer pt-4">
             <input
