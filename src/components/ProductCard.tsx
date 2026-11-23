@@ -91,14 +91,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <div className="pt-3 border-t border-[#174D40]/10 space-y-3">
           <div className="flex items-baseline justify-between gap-2">
             <div className="flex items-baseline gap-2">
-              <span className="text-lg font-semibold text-[#174D40] tabular-nums">
-                {formatPkr(product.pricePkr)}
-              </span>
               {hasDiscount && (
-                <span className="text-xs text-[#252B29]/50 line-through tabular-nums">
+                <span className="text-sm text-[#252B29]/55 line-through tabular-nums" aria-label="Comparison price">
                   {formatPkr(product.compareAtPricePkr!)}
                 </span>
               )}
+              <span className="text-lg font-semibold text-[#174D40] tabular-nums" aria-label="Current price">
+                {formatPkr(product.pricePkr)}
+              </span>
             </div>
             {product.usageSummary && (
               <span className="text-xs text-[#252B29]/60 truncate">{product.usageSummary}</span>
