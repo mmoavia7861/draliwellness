@@ -7,6 +7,7 @@ import { calculateCartTotals, formatPkr } from '../utils/commerce';
 export const CartDrawer: React.FC = () => {
   const {
     cart,
+    products,
     cartDrawerOpen,
     setCartDrawerOpen,
     updateCartQuantity,
@@ -23,6 +24,13 @@ export const CartDrawer: React.FC = () => {
     siteSettings.freeShippingThresholdPkr,
     appliedCoupon
   );
+
+  const comparisonLineTotal = (productId: string, unitPricePkr: number, quantity: number) => {
+    const comparison = products.find((product) => product.id === productId)?.compareAtPricePkr;
+    return typeof comparison === 'number' && comparison > unitPricePkr
+      ? comparison * quantity
+      : null;
+  };
 
   const remainingForFreeShipping = Math.max(
     0,
@@ -151,9 +159,16 @@ export const CartDrawer: React.FC = () => {
                       </button>
                     </div>
 
-                    <span className="text-sm font-semibold text-[#174D40] tabular-nums">
-                      {formatPkr(item.unitPricePkr * item.quantity)}
-                    </span>
+                    <div className="flex flex-col items-end gap-0.5 tabular-nums">
+                      {comparisonLineTotal(item.productId, item.unitPricePkr, item.quantity) !== null && (
+                        <span className="text-xs text-[#252B29]/55 line-through">
+                          {formatPkr(comparisonLineTotal(item.productId, item.unitPricePkr, item.quantity)!)}
+                        </span>
+                      )}
+                      <span className="text-sm font-semibold text-[#174D40]">
+                        {formatPkr(item.unitPricePkr * item.quantity)}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
