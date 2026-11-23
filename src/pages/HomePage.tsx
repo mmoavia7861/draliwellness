@@ -79,8 +79,8 @@ export const HomePage: React.FC = () => {
                 <p className="mt-0.5">Transparent composition</p>
               </div>
               <div>
-                <p className="font-semibold text-[#174D40]">Cash on Delivery</p>
-                <p className="mt-0.5">Nationwide Pakistan</p>
+                <p className="font-semibold text-[#174D40]">Free Delivery</p>
+                <p className="mt-0.5">Nationwide · No minimum</p>
               </div>
               <div>
                 <p className="font-semibold text-[#174D40]">Direct Support</p>
@@ -300,7 +300,7 @@ export const HomePage: React.FC = () => {
               {
                 icon: Truck,
                 title: 'Nationwide Delivery',
-                desc: 'Dependable courier dispatch across Pakistan with Cash on Delivery and verification-protected online order tracking.',
+                desc: 'Free courier delivery across Pakistan with no minimum order amount, Cash on Delivery and order tracking.',
               },
               {
                 icon: MessageCircle,
