@@ -72,11 +72,18 @@ export const ProductDetailPage: React.FC = () => {
       )}`
     : '/contact';
 
+  const productCanonicalUrl = `https://draliwellness.com/product/${product.slug}/`;
+  const productImages = gallery
+    .filter(Boolean)
+    .map((url) => new URL(url, 'https://draliwellness.com/').href);
+
   const productJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product.name,
     description: product.shortDescription || product.overview,
+    url: productCanonicalUrl,
+    ...(productImages.length > 0 ? { image: productImages } : {}),
     brand: {
       '@type': 'Brand',
       name: product.brand,
@@ -84,6 +91,7 @@ export const ProductDetailPage: React.FC = () => {
     sku: activeVariant?.sku || product.sku,
     offers: {
       '@type': 'Offer',
+      url: productCanonicalUrl,
       priceCurrency: 'PKR',
       price: String(displayPrice),
       availability: inStock
