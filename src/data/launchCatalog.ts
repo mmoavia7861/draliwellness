@@ -66,13 +66,13 @@ export const LAUNCH_PRODUCTS: Product[] = [
       'Supports Heart Health',
     ],
     ingredientsSummary:
-      'Balanced daily multivitamin and essential mineral formulation. Full composition panel can be updated and verified by the administrator.',
+      'See the product packaging for the complete formula, nutrient amounts and any additional ingredients. Contact support if the detailed label is needed before ordering.',
     supplementFacts: [
       { nutrient: 'Serving Size', amount: '1 Tablet Daily' },
       { nutrient: 'Servings Per Bottle', amount: '30 Tablets' },
       { nutrient: 'Formula Type', amount: 'Multivitamin & Mineral Complex' },
     ],
-    otherIngredients: 'Permitted tablet excipients. Consult label on physical bottle for full excipient listing.',
+    otherIngredients: 'Refer to the physical bottle label for the complete excipient listing.',
     directions:
       'Take one (1) tablet once daily with water, preferably after a meal, or as directed by your healthcare professional.',
     warnings:
@@ -202,7 +202,7 @@ export const LAUNCH_SITE_SETTINGS: SiteSettings = {
   tagline: 'Thoughtful wellness, supported by knowledge and care.',
   announcementEnabled: true,
   announcementText:
-    'Nationwide Delivery Across Pakistan · Cash on Delivery Available · Verified BrainAxis Supplements',
+    'Nationwide Delivery Across Pakistan · Cash on Delivery Available · BrainAxis Supplements',
   heroHeadline: 'Smarter Wellness Starts Here',
   heroSubheadline:
     'Discover premium wellness supplements by BrainAxis under Dr. Ali Hassan Health & Wellness — transparent composition, verified packaging, and nationwide delivery.',
