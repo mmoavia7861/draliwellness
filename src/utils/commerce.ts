@@ -18,8 +18,8 @@ export interface CartTotals {
 
 export function calculateCartTotals(
   items: CartItem[],
-  shippingFeePkr: number,
-  freeShippingThresholdPkr: number,
+  _shippingFeePkr: number,
+  _freeShippingThresholdPkr: number,
   coupon?: Coupon | null,
   now: Date = new Date()
 ): CartTotals {
@@ -61,10 +61,8 @@ export function calculateCartTotals(
   }
 
   const discountedSubtotal = Math.max(0, subtotalPkr - discountPkr);
-  const effectiveShipping =
-    freeShippingThresholdPkr > 0 && discountedSubtotal >= freeShippingThresholdPkr
-      ? 0
-      : Math.max(0, Math.round(shippingFeePkr));
+  // Free nationwide delivery is guaranteed even for previously saved CMS fees.
+  const effectiveShipping = 0;
 
   return {
     subtotalPkr,
