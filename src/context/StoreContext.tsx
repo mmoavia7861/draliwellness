@@ -428,6 +428,16 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           setSiteSettings({
             ...LAUNCH_SITE_SETTINGS,
             ...saved,
+            // Free nationwide delivery supersedes old fee/threshold values in Firestore.
+            shippingFeePkr: 0,
+            freeShippingThresholdPkr: 0,
+            policies: {
+              ...LAUNCH_SITE_SETTINGS.policies,
+              ...saved.policies,
+              shippingPolicy: /standard shipping charges|free-shipping thresholds/i.test(saved.policies?.shippingPolicy || '')
+                ? LAUNCH_SITE_SETTINGS.policies.shippingPolicy
+                : (saved.policies?.shippingPolicy || LAUNCH_SITE_SETTINGS.policies.shippingPolicy),
+            },
             // Replace only the previously seeded placeholder number, not custom admin values.
             whatsappNumber:
               !savedPhone || savedPhone === '923000000000'
