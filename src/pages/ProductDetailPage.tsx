@@ -97,6 +97,11 @@ export const ProductDetailPage: React.FC = () => {
       url: productCanonicalUrl,
       priceCurrency: 'PKR',
       price: String(displayPrice),
+      shippingDetails: {
+        '@type': 'OfferShippingDetails',
+        shippingRate: { '@type': 'MonetaryAmount', value: 0, currency: 'PKR' },
+        shippingDestination: { '@type': 'DefinedRegion', addressCountry: 'PK' },
+      },
       availability: inStock
         ? 'https://schema.org/InStock'
         : 'https://schema.org/OutOfStock',
@@ -333,8 +338,7 @@ export const ProductDetailPage: React.FC = () => {
               <div className="flex items-center gap-2">
                 <Truck className="w-4 h-4 text-[#174D40]" />
                 <span>
-                  Shipping: {formatPkr(siteSettings.shippingFeePkr)} across Pakistan (Free above{' '}
-                  {formatPkr(siteSettings.freeShippingThresholdPkr)})
+                  Free Nationwide Delivery Across Pakistan — Rs. 0 shipping, no minimum order
                 </span>
               </div>
               <div className="flex items-center gap-2">
