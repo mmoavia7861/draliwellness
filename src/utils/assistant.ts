@@ -67,8 +67,8 @@ export function serializeCatalogForAssistant(
       ? {
           businessName: site.businessName,
           supplementBrandName: site.supplementBrandName,
-          shippingFeePkr: site.shippingFeePkr,
-          freeShippingThresholdPkr: site.freeShippingThresholdPkr,
+          shippingFeePkr: 0,
+          freeShippingThresholdPkr: 0,
           codEnabled: site.codEnabled,
           supportHours: site.supportHours,
         }
@@ -156,15 +156,9 @@ export function validateAssistantInput(
       site = {
         businessName,
         supplementBrandName: trimString(s.supplementBrandName, 80) || undefined,
-        shippingFeePkr:
-          typeof s.shippingFeePkr === 'number' && Number.isFinite(s.shippingFeePkr)
-            ? Math.max(0, Math.round(s.shippingFeePkr))
-            : 200,
-        freeShippingThresholdPkr:
-          typeof s.freeShippingThresholdPkr === 'number' &&
-          Number.isFinite(s.freeShippingThresholdPkr)
-            ? Math.max(0, Math.round(s.freeShippingThresholdPkr))
-            : 2000,
+        // The public store now offers free delivery even if old clients pass stale fees.
+        shippingFeePkr: 0,
+        freeShippingThresholdPkr: 0,
         codEnabled: typeof s.codEnabled === 'boolean' ? s.codEnabled : true,
         supportHours: trimString(s.supportHours, 120) || undefined,
       };
@@ -220,9 +214,7 @@ export function buildAssistantSystemInstruction(
   const activeProducts = products.length > 0 ? products : DEFAULT_LAUNCH_PRODUCTS;
   const businessName = site?.businessName || 'Dr. Ali Hassan Health & Wellness';
   const supplementBrand = site?.supplementBrandName || 'BrainAxis';
-  const shippingFee = site?.shippingFeePkr ?? 200;
-  const freeThreshold = site?.freeShippingThresholdPkr ?? 2000;
-  const supportHours = site?.supportHours || 'Monday – Saturday, 9:00 AM – 7:00 PM PKT';
+   const supportHours = site?.supportHours || 'Monday – Saturday, 9:00 AM – 7:00 PM PKT';
 
   const productLines = activeProducts
     .map((p, index) => {
@@ -251,7 +243,7 @@ export function buildAssistantSystemInstruction(
     productLines,
     '',
     'SHIPPING & ORDERING POLICY:',
-    `- Nationwide delivery across Pakistan. Standard shipping fee: Rs. ${shippingFee}. Free shipping on orders of Rs. ${freeThreshold} or above.`,
+    '- Free nationwide delivery across Pakistan for every order. Shipping charges are Rs. 0 and there is no minimum order amount.',
     `- Payment options at launch: ${site?.codEnabled !== false ? 'Cash on Delivery (COD) and WhatsApp order confirmation' : 'WhatsApp order support'}.`,
     '- Customers can track orders on the Track Order page using their Order Number and checkout email/phone.',
     `- Support hours: ${supportHours}.`,
