@@ -13,7 +13,7 @@ const walletLabel = (value: string) => value === 'easypaisa' ? 'Easypaisa' : 'Ja
 
 export const CheckoutPage: React.FC = () => {
   const {
-    cart, siteSettings, appliedCoupon, applyCouponCode, clearCoupon,
+    cart, products, siteSettings, appliedCoupon, applyCouponCode, clearCoupon,
     user, userProfile, placeOrder,
   } = useStore();
 
@@ -46,6 +46,13 @@ export const CheckoutPage: React.FC = () => {
     siteSettings.freeShippingThresholdPkr,
     appliedCoupon
   );
+
+  const comparisonLineTotal = (productId: string, unitPricePkr: number, quantity: number) => {
+    const comparison = products.find((product) => product.id === productId)?.compareAtPricePkr;
+    return typeof comparison === 'number' && comparison > unitPricePkr
+      ? comparison * quantity
+      : null;
+  };
 
   const handleApplyCoupon = async () => {
     if (couponSubmitting || submitting) return;
@@ -486,9 +493,16 @@ export const CheckoutPage: React.FC = () => {
                         Qty {item.quantity} {item.variantLabel ? `· ${item.variantLabel}` : ''}
                       </p>
                     </div>
-                    <span className="font-semibold tabular-nums">
-                      {formatPkr(item.unitPricePkr * item.quantity)}
-                    </span>
+                    <div className="flex flex-col items-end gap-0.5 tabular-nums">
+                      {comparisonLineTotal(item.productId, item.unitPricePkr, item.quantity) !== null && (
+                        <span className="text-xs text-[#252B29]/55 line-through">
+                          {formatPkr(comparisonLineTotal(item.productId, item.unitPricePkr, item.quantity)!)}
+                        </span>
+                      )}
+                      <span className="font-semibold text-[#174D40]">
+                        {formatPkr(item.unitPricePkr * item.quantity)}
+                      </span>
+                    </div>
                   </li>
                 ))}
               </ul>
