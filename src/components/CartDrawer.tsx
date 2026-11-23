@@ -32,10 +32,7 @@ export const CartDrawer: React.FC = () => {
       : null;
   };
 
-  const remainingForFreeShipping = Math.max(
-    0,
-    siteSettings.freeShippingThresholdPkr - totals.subtotalPkr
-  );
+  // All orders qualify for free delivery, regardless of cart amount.
 
   return (
     <div
@@ -67,11 +64,9 @@ export const CartDrawer: React.FC = () => {
           </button>
         </div>
 
-        {siteSettings.freeShippingThresholdPkr > 0 && cart.length > 0 && (
+        {cart.length > 0 && (
           <div className="px-6 py-2.5 bg-[#E8F1EB] text-xs text-[#174D40] font-medium border-b border-[#174D40]/10">
-            {remainingForFreeShipping > 0
-              ? `Add ${formatPkr(remainingForFreeShipping)} more for free nationwide delivery.`
-              : 'Your order qualifies for free nationwide delivery across Pakistan.'}
+            Free Nationwide Delivery — no minimum order.
           </div>
         )}
 
