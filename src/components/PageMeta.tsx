@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 
 interface PageMetaProps {
   title: string;
@@ -7,6 +8,10 @@ interface PageMetaProps {
 }
 
 export const PageMeta: React.FC<PageMetaProps> = ({ title, description, jsonLd }) => {
+  const { pathname } = useLocation();
+  const canonicalPath = pathname.endsWith('/') ? pathname : pathname + '/';
+  const canonicalUrl = 'https://draliwellness.com' + canonicalPath;
+
   useEffect(() => {
     document.title = title;
     const metaDesc = document.querySelector('meta[name="description"]');
@@ -21,7 +26,21 @@ export const PageMeta: React.FC<PageMetaProps> = ({ title, description, jsonLd }
     if (ogDesc) {
       ogDesc.setAttribute('content', description);
     }
-  }, [title, description]);
+    let canonical = document.querySelector('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonical);
+    }
+    canonical.setAttribute('href', canonicalUrl);
+    let ogUrl = document.querySelector('meta[property="og:url"]');
+    if (!ogUrl) {
+      ogUrl = document.createElement('meta');
+      ogUrl.setAttribute('property', 'og:url');
+      document.head.appendChild(ogUrl);
+    }
+    ogUrl.setAttribute('content', canonicalUrl);
+  }, [title, description, canonicalUrl]);
 
   if (!jsonLd) return null;
 
