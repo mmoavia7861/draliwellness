@@ -53,6 +53,8 @@ jobs:
           from pathlib import Path
           from urllib.parse import urlparse
           import xml.etree.ElementTree as ET
+          import json
+          import re
 
           output = Path('dist')
           sitemap = output / 'sitemap.xml'
@@ -71,6 +73,21 @@ jobs:
               assert page.is_file(), f'Missing route entry HTML: {page}'
               html = page.read_text()
               assert f'<link rel="canonical" href="{url}" />' in html, f'Canonical mismatch: {url}'
+              assert '<h1>' in html and '<h2>' in html, f'Main crawlable page content missing: {url}'
+              assert '<meta name="description" content=' in html, f'Page description missing: {url}'
+              assert '<meta property="og:image" content=' in html, f'Social image missing: {url}'
+              assert 'max-image-preview:large' in html, f'Robots image metadata missing: {url}'
+              schemas = re.findall(r'<script type="application/ld\\+json">([\\s\\S]*?)</script>', html)
+              assert len(schemas) == 1, f'Expected one structured-data graph: {url}'
+              graph = json.loads(schemas[0]).get('@graph', [])
+              types = [node.get('@type') for node in graph]
+              assert 'WebSite' in types and 'Organization' in types, f'Brand schema missing: {url}'
+              assert 'WebPage' in types or 'FAQPage' in types, f'Page schema missing: {url}'
+              if '/product/' in parsed.path:
+                  assert 'Product' in types, f'Product schema missing: {url}'
+                  assert any(node.get('@type') == 'Product' and node.get('image') and node.get('sku') for node in graph), f'Product identity incomplete: {url}'
+                  assert 'NIH Office of Dietary Supplements' in html, f'Health reference missing: {url}'
+              assert 'aggregateRating' not in schemas[0], f'Unverified product ratings published: {url}'
           assert 'Sitemap: https://draliwellness.com/sitemap.xml' in robots.read_text(), 'Robots sitemap reference missing'
           print(f'Validated {len(urls)} canonical sitemap URLs and robots.txt.')
           PY
