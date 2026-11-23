@@ -114,9 +114,17 @@ export const HomePage: React.FC = () => {
                     {primaryProduct.name}
                   </h2>
                   <p className="text-xs text-[#252B29]/70">{primaryProduct.subtitle || 'Once Daily Multivitamin'}</p>
-                  <p className="text-sm font-semibold text-[#174D40] tabular-nums pt-0.5">
-                    {formatPkr(primaryProduct.pricePkr)}
-                  </p>
+                  <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 pt-1">
+                    {typeof primaryProduct.compareAtPricePkr === 'number' &&
+                      primaryProduct.compareAtPricePkr > primaryProduct.pricePkr && (
+                        <span className="text-sm text-[#252B29]/55 line-through tabular-nums" aria-label="Original price">
+                          {formatPkr(primaryProduct.compareAtPricePkr)}
+                        </span>
+                      )}
+                    <span className="text-lg font-semibold text-[#174D40] tabular-nums" aria-label="Current price">
+                      {formatPkr(primaryProduct.pricePkr)}
+                    </span>
+                  </div>
                 </div>
               </Link>
             )}
@@ -144,9 +152,17 @@ export const HomePage: React.FC = () => {
                     BrainAxis SUNDEX-D®
                   </h2>
                   <p className="text-xs text-[#252B29]/70">Vitamin D3 200,000 IU</p>
-                  <p className="text-sm font-semibold text-[#174D40] tabular-nums pt-0.5">
-                    {formatPkr(secondaryProduct.pricePkr)}
-                  </p>
+                  <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 pt-1">
+                    {typeof secondaryProduct.compareAtPricePkr === 'number' &&
+                      secondaryProduct.compareAtPricePkr > secondaryProduct.pricePkr && (
+                        <span className="text-sm text-[#252B29]/55 line-through tabular-nums" aria-label="Original price">
+                          {formatPkr(secondaryProduct.compareAtPricePkr)}
+                        </span>
+                      )}
+                    <span className="text-lg font-semibold text-[#174D40] tabular-nums" aria-label="Current price">
+                      {formatPkr(secondaryProduct.pricePkr)}
+                    </span>
+                  </div>
                 </div>
               </Link>
             )}
