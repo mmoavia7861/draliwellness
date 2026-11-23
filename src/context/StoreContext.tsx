@@ -67,23 +67,35 @@ const CART_STORAGE_KEY = 'dr_ali_hassan_cart_v1';
 const WISHLIST_STORAGE_KEY = 'dr_ali_hassan_wishlist_v1';
 const BOOTSTRAP_ADMIN_EMAIL = 'moavia400@gmail.com';
 
-// Apply the current launch price to Firestore records still carrying the old seed.
-// Newer admin-edited prices remain unchanged.
-function normalizeLegacyEnergyBoostPrice(product: Product): Product {
-  if (product.id !== 'brainaxis-energy-boost') return product;
-  const needsBaseUpdate = product.pricePkr === 1350;
-  const needsVariantUpdate = product.variants?.some(
-    (variant) => variant.id === 'eb-30-tablets' && variant.pricePkr === 1350
+// Restore the current launch offer on older Firestore records, without changing
+// intentionally edited selling prices or product availability.
+function normalizeLaunchOfferPricing(product: Product): Product {
+  const isEnergyBoost = product.id === 'brainaxis-energy-boost';
+  const isSundexD = product.id === 'brainaxis-sundex-d';
+
+  const oldEnergyBoostPrice = isEnergyBoost && product.pricePkr === 1350;
+  const sellingPrice = oldEnergyBoostPrice ? 1295 : product.pricePkr;
+
+  const updatedVariants = product.variants?.map((variant) =>
+    isEnergyBoost && variant.id === 'eb-30-tablets' && variant.pricePkr === 1350
+      ? { ...variant, pricePkr: 1295 }
+      : variant
   );
-  if (!needsBaseUpdate && !needsVariantUpdate) return product;
+
+  // Show the owner-requested strike-through price when the product is still at
+  // its standard launch selling price; other admin-edited selling prices remain.
+  const launchComparePrice =
+    isEnergyBoost && sellingPrice === 1295
+      ? 2000
+      : isSundexD && sellingPrice === 799
+        ? 999
+        : undefined;
+
   return {
     ...product,
-    pricePkr: needsBaseUpdate ? 1295 : product.pricePkr,
-    variants: product.variants?.map((variant) =>
-      variant.id === 'eb-30-tablets' && variant.pricePkr === 1350
-        ? { ...variant, pricePkr: 1295 }
-        : variant
-    ),
+    pricePkr: sellingPrice,
+    ...(launchComparePrice ? { compareAtPricePkr: launchComparePrice } : {}),
+    variants: updatedVariants,
   };
 }
 
@@ -372,7 +384,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       (snap) => {
         if (!snap.empty) {
           const items = snap.docs
-            .map((d) => normalizeLegacyEnergyBoostPrice(d.data() as Product))
+            .map((d) => normalizeLaunchOfferPricing(d.data() as Product))
             .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
           setProducts(items);
           setFirestoreSeeded(true);
