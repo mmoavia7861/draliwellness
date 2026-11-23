@@ -8,6 +8,7 @@ import { calculateCartTotals, formatPkr } from '../utils/commerce';
 export const CartPage: React.FC = () => {
   const {
     cart,
+    products,
     updateCartQuantity,
     removeFromCart,
     siteSettings,
@@ -15,6 +16,13 @@ export const CartPage: React.FC = () => {
     applyCouponCode,
     clearCoupon,
   } = useStore();
+
+  const comparisonLineTotal = (productId: string, unitPricePkr: number, quantity: number) => {
+    const comparison = products.find((product) => product.id === productId)?.compareAtPricePkr;
+    return typeof comparison === 'number' && comparison > unitPricePkr
+      ? comparison * quantity
+      : null;
+  };
 
   const [couponInput, setCouponInput] = useState('');
   const [couponMsg, setCouponMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -83,9 +91,14 @@ export const CartPage: React.FC = () => {
                     <p className="text-xs text-[#252B29]/65">
                       {[item.brand, item.variantLabel].filter(Boolean).join(' · ')}
                     </p>
-                    <p className="text-sm font-medium text-[#174D40] tabular-nums">
-                      {formatPkr(item.unitPricePkr)} each
-                    </p>
+                    <div className="flex flex-wrap items-baseline gap-2 text-sm tabular-nums">
+                      {comparisonLineTotal(item.productId, item.unitPricePkr, 1) !== null && (
+                        <span className="text-[#252B29]/55 line-through">
+                          {formatPkr(comparisonLineTotal(item.productId, item.unitPricePkr, 1)!)}
+                        </span>
+                      )}
+                      <span className="font-medium text-[#174D40]">{formatPkr(item.unitPricePkr)} each</span>
+                    </div>
                   </div>
 
                   <div className="flex items-center justify-between sm:justify-end gap-4">
@@ -115,9 +128,16 @@ export const CartPage: React.FC = () => {
                       </button>
                     </div>
 
-                    <span className="text-base font-semibold text-[#174D40] tabular-nums w-24 text-right">
-                      {formatPkr(item.unitPricePkr * item.quantity)}
-                    </span>
+                    <div className="flex flex-col items-end gap-0.5 tabular-nums">
+                      {comparisonLineTotal(item.productId, item.unitPricePkr, item.quantity) !== null && (
+                        <span className="text-xs text-[#252B29]/55 line-through">
+                          {formatPkr(comparisonLineTotal(item.productId, item.unitPricePkr, item.quantity)!)}
+                        </span>
+                      )}
+                      <span className="text-base font-semibold text-[#174D40]">
+                        {formatPkr(item.unitPricePkr * item.quantity)}
+                      </span>
+                    </div>
 
                     <button
                       type="button"
