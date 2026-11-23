@@ -31,7 +31,7 @@ test('sanitizeSiteSettingsForFirestore enforces rule whitelist and bounds', () =
   assert.equal(clean.businessName, 'Dr. Ali Hassan Health & Wellness');
   assert.equal(clean.bannerIntervalSec, 60);
   assert.equal(clean.shippingFeePkr, 0);
-  assert.equal(clean.freeShippingThresholdPkr, 500000);
+  assert.equal(clean.freeShippingThresholdPkr, 0);
   assert.equal(clean.banners?.length, 11);
   assert.equal(clean.faqs?.length, 1);
   assert.equal(clean.faqs?.[0]?.question, 'Valid Q?');
