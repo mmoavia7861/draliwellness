@@ -278,8 +278,8 @@ export const HomePage: React.FC = () => {
               },
               {
                 icon: ShieldCheck,
-                title: 'Verified Quality',
-                desc: 'Transparent supplement facts, batch numbers, storage instructions, GMP/ISO/DRAP-listed manufacturer details, and upfront safety cautions.',
+                title: 'Label & Safety Information',
+                desc: 'Review the published supplement information, directions, storage and safety cautions. Confirm product-specific manufacturer and regulatory details on the actual packaging.',
               },
               {
                 icon: Truck,
