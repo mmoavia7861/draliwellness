@@ -186,15 +186,15 @@ export const ProductDetailPage: React.FC = () => {
 
             <div className="flex items-baseline justify-between gap-4 border-y border-[#174D40]/10 py-4">
               <div>
-                <span className="text-2xl font-semibold text-[#174D40] tabular-nums">
-                  {formatPkr(displayPrice)}
-                </span>
                 {typeof product.compareAtPricePkr === 'number' &&
                   product.compareAtPricePkr > displayPrice && (
-                    <span className="ml-2 text-sm text-[#252B29]/50 line-through tabular-nums">
+                    <span className="mr-2 text-sm text-[#252B29]/55 line-through tabular-nums" aria-label="Comparison price">
                       {formatPkr(product.compareAtPricePkr)}
                     </span>
                   )}
+                <span className="text-2xl font-semibold text-[#174D40] tabular-nums" aria-label="Current price">
+                  {formatPkr(displayPrice)}
+                </span>
               </div>
               <span
                 className={`text-xs font-semibold ${
