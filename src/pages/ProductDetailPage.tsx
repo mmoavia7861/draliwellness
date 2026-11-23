@@ -72,6 +72,8 @@ export const ProductDetailPage: React.FC = () => {
       )}`
     : '/contact';
 
+  const isPublishedLabelValue = (value?: string | null) =>
+    Boolean(value?.trim() && !/^(editable in admin|pending|tbd|to be confirmed|not available|n\/a)$/i.test(value.trim()));
   const productCanonicalUrl = `https://draliwellness.com/product/${product.slug}/`;
   const productImages = gallery
     .filter(Boolean)
@@ -463,25 +465,25 @@ export const ProductDetailPage: React.FC = () => {
                     <dd className="font-medium text-[#252B29]">{product.countryOfOrigin}</dd>
                   </div>
                 )}
-                {product.batchNo && (
+                {isPublishedLabelValue(product.batchNo) && (
                   <div>
                     <dt className="text-[#252B29]/55">Batch No.</dt>
                     <dd className="font-medium text-[#252B29] tabular-nums">{product.batchNo}</dd>
                   </div>
                 )}
-                {product.mfgDate && (
+                {isPublishedLabelValue(product.mfgDate) && (
                   <div>
                     <dt className="text-[#252B29]/55">Mfg. Date</dt>
                     <dd className="font-medium text-[#252B29] tabular-nums">{product.mfgDate}</dd>
                   </div>
                 )}
-                {product.expDate && (
+                {isPublishedLabelValue(product.expDate) && (
                   <div>
                     <dt className="text-[#252B29]/55">Exp. Date</dt>
                     <dd className="font-medium text-[#252B29] tabular-nums">{product.expDate}</dd>
                   </div>
                 )}
-                {product.enlistmentNo && (
+                {isPublishedLabelValue(product.enlistmentNo) && (
                   <div>
                     <dt className="text-[#252B29]/55">Enlistment No.</dt>
                     <dd className="font-medium text-[#252B29] tabular-nums">
@@ -489,7 +491,7 @@ export const ProductDetailPage: React.FC = () => {
                     </dd>
                   </div>
                 )}
-                {product.form7No && (
+                {isPublishedLabelValue(product.form7No) && (
                   <div>
                     <dt className="text-[#252B29]/55">Form 7 No.</dt>
                     <dd className="font-medium text-[#252B29] tabular-nums">{product.form7No}</dd>
