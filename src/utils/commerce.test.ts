@@ -17,7 +17,7 @@ test('formatPkr formats Pakistani Rupee prices cleanly', () => {
   assert.equal(formatPkr(-10), 'Rs. 0');
 });
 
-test('calculateCartTotals computes subtotal, shipping, and free shipping threshold', () => {
+test('calculateCartTotals guarantees free shipping regardless of old fee and threshold values', () => {
   const items: CartItem[] = [
     {
       productId: 'brainaxis-sundex-d',
@@ -31,8 +31,8 @@ test('calculateCartTotals computes subtotal, shipping, and free shipping thresho
   ];
   const underThreshold = calculateCartTotals(items, 200, 2000);
   assert.equal(underThreshold.subtotalPkr, 799);
-  assert.equal(underThreshold.shippingFeePkr, 200);
-  assert.equal(underThreshold.totalPkr, 999);
+  assert.equal(underThreshold.shippingFeePkr, 0);
+  assert.equal(underThreshold.totalPkr, 799);
 
   const overThreshold = calculateCartTotals(
     [{ ...items[0], quantity: 3 }],
