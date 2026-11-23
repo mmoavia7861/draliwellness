@@ -202,7 +202,7 @@ export const LAUNCH_SITE_SETTINGS: SiteSettings = {
   tagline: 'Thoughtful wellness, supported by knowledge and care.',
   announcementEnabled: true,
   announcementText:
-    'Nationwide Delivery Across Pakistan · Cash on Delivery Available · BrainAxis Supplements',
+    'Free Nationwide Delivery Across Pakistan · Cash on Delivery Available · BrainAxis Supplements',
   heroHeadline: 'Smarter Wellness Starts Here',
   heroSubheadline:
     'Discover premium wellness supplements by BrainAxis under Dr. Ali Hassan Health & Wellness — transparent composition, verified packaging, and nationwide delivery.',
@@ -249,8 +249,8 @@ export const LAUNCH_SITE_SETTINGS: SiteSettings = {
     'Hello Dr. Ali Hassan Health & Wellness team, I have a question about BrainAxis supplements.',
   supportEmail: 'support@dralihassanwellness.pk',
   supportHours: 'Monday – Saturday, 9:00 AM – 7:00 PM PKT',
-  shippingFeePkr: 200,
-  freeShippingThresholdPkr: 2000,
+  shippingFeePkr: 0,
+  freeShippingThresholdPkr: 0,
   codEnabled: true,
   onlinePaymentsEnabled: false,
   faqs: [
@@ -286,7 +286,7 @@ export const LAUNCH_SITE_SETTINGS: SiteSettings = {
     termsAndConditions:
       'All BrainAxis dietary supplements offered on this website are intended for general nutritional support and are not medicines intended to diagnose, treat, cure, or prevent any disease. High-potency formulations such as SUNDEX-D (200,000 IU) must be used only on the advice of a registered healthcare professional.',
     shippingPolicy:
-      'We deliver nationwide across Pakistan. Standard shipping charges and free-shipping thresholds are clearly shown in your cart and at checkout prior to confirming your order. Dispatch timelines may vary during public holidays.',
+      'Free delivery is available for all orders across Pakistan with no minimum purchase amount. The delivery charge is Rs. 0 at checkout. Dispatch and delivery timelines may vary by location and during public holidays.',
     refundPolicy:
       'Unopened, sealed supplement packs with intact tamper-evident packaging may be eligible for return or replacement within 7 days of delivery if damaged in transit or incorrect. Opened consumables cannot be returned for safety reasons. Contact support with your order number to initiate a review.',
     supplementDisclaimer:
