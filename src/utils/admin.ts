@@ -52,7 +52,9 @@ export function sanitizeSiteSettingsForFirestore(settings: SiteSettings): Omit<S
   const policies: SitePolicies = {
     privacyPolicy: clampString(rawPolicies.privacyPolicy, 6000),
     termsAndConditions: clampString(rawPolicies.termsAndConditions, 6000),
-    shippingPolicy: clampString(rawPolicies.shippingPolicy, 6000),
+    shippingPolicy: /standard shipping charges|free-shipping thresholds/i.test(rawPolicies.shippingPolicy || '')
+      ? 'All orders qualify for free delivery throughout Pakistan, with no minimum purchase amount. Delivery charges are Rs. 0. Courier dispatch times may vary by destination.'
+      : clampString(rawPolicies.shippingPolicy, 6000),
     refundPolicy: clampString(rawPolicies.refundPolicy, 6000),
     supplementDisclaimer: clampString(rawPolicies.supplementDisclaimer, 4000),
   };
@@ -85,8 +87,9 @@ export function sanitizeSiteSettingsForFirestore(settings: SiteSettings): Omit<S
     whatsappGreeting: clampString(settings.whatsappGreeting, 300),
     supportEmail: clampString(settings.supportEmail, 120),
     supportHours: clampString(settings.supportHours, 160),
-    shippingFeePkr: clampNumber(settings.shippingFeePkr, 250, 0, 50000),
-    freeShippingThresholdPkr: clampNumber(settings.freeShippingThresholdPkr, 3000, 0, 500000),
+    // Owner-approved free nationwide delivery on all purchases.
+    shippingFeePkr: 0,
+    freeShippingThresholdPkr: 0,
     codEnabled: settings.codEnabled !== false,
     onlinePaymentsEnabled: Boolean(settings.onlinePaymentsEnabled),
     faqs,
