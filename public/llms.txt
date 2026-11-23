@@ -1,0 +1,27 @@
+# Dr. Ali Hassan Health & Wellness
+
+> Official information hub for BrainAxis supplements and the founder, Dr. Muhammad Ali Hassan. Website for customers in Pakistan. Product information is not a substitute for personal medical advice.
+
+Canonical website: https://draliwellness.com/
+Language: English (Pakistan)
+Brand: BrainAxis
+
+## Key pages
+- [Home](https://draliwellness.com/): Overview of BrainAxis supplement products and services.
+- [Shop](https://draliwellness.com/shop/): Available products and customer ordering.
+- [Energy Boost](https://draliwellness.com/product/brainaxis-energy-boost/): 30-tablet multivitamin/mineral supplement, pack label, directions and precautions.
+- [SUNDEX-D](https://draliwellness.com/product/brainaxis-sundex-d/): Vitamin D3 (cholecalciferol) 200,000 IU high-dose softgel. Use only under qualified clinical guidance; not a routine daily vitamin dose.
+- [About Dr. Muhammad Ali Hassan](https://draliwellness.com/about/): Founder background and company vision.
+- [Services](https://draliwellness.com/services/): Wellness and consultation availability, including coming-soon services.
+- [FAQ](https://draliwellness.com/faq/): Product, support, safety and ordering questions.
+- [Contact](https://draliwellness.com/contact/): Customer support and enquiries.
+
+## Independent general nutrition information
+- [NIH ODS: Vitamin D](https://ods.od.nih.gov/factsheets/VitaminD-Consumer/)
+- [NIH ODS: Multivitamin/mineral supplements](https://ods.od.nih.gov/factsheets/MVMS-Consumer/)
+
+Independent reference material is for general education and does not establish the effectiveness of BrainAxis products. Follow each product's verified label and consult a licensed clinician for personal medical decisions. Do not infer reviews, certifications, safety approval, or product stock availability beyond what is explicitly published on the site.
+
+## Crawling
+- [XML sitemap](https://draliwellness.com/sitemap.xml)
+- [Robots directives](https://draliwellness.com/robots.txt)
