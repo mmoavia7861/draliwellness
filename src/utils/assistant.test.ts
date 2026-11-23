@@ -33,7 +33,8 @@ test('validateAssistantInput sanitizes history and product context cleanly', () 
     assert.equal(result.data.history.length, 2);
     assert.equal(result.data.history[1].role, 'model');
     assert.equal(result.data.products.length, 2);
-    assert.equal(result.data.site?.freeShippingThresholdPkr, 2000);
+    assert.equal(result.data.site?.freeShippingThresholdPkr, 0);
+    assert.equal(result.data.site?.shippingFeePkr, 0);
   }
 });
 
@@ -47,7 +48,7 @@ test('buildAssistantSystemInstruction grounds prompt in BrainAxis catalog and sa
   assert.ok(instruction.includes('200,000 IU'));
   assert.ok(instruction.includes('Rs. 799'));
   assert.ok(instruction.includes('registered healthcare professional'));
-  assert.ok(instruction.includes('Free shipping on orders of Rs. 2000'));
+  assert.ok(instruction.includes('Free nationwide delivery across Pakistan for every order'));
 });
 
 test('extractReadableErrorMessage unwraps nested JSON API error payloads cleanly', () => {
