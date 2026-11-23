@@ -80,6 +80,7 @@ export const ProductDetailPage: React.FC = () => {
   const productJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Product',
+    '@id': `${productCanonicalUrl}#product`,
     name: product.name,
     description: product.shortDescription || product.overview,
     url: productCanonicalUrl,
@@ -522,6 +523,35 @@ export const ProductDetailPage: React.FC = () => {
                 </div>
               ))}
             </div>
+          </section>
+        )}
+
+        {/* Independent reference sources support reader understanding, not product efficacy claims. */}
+        {(product.slug === 'brainaxis-energy-boost' || product.slug === 'brainaxis-sundex-d') && (
+          <section aria-labelledby="independent-health-information" className="bg-[#E8F1EB]/55 border border-[#174D40]/15 rounded-2xl p-6 sm:p-8 space-y-3">
+            <h2 id="independent-health-information" className="font-serif text-2xl font-semibold text-[#174D40]">
+              Independent Health Information
+            </h2>
+            <p className="text-sm text-[#252B29]/80 leading-relaxed">
+              {product.slug === 'brainaxis-sundex-d'
+                ? 'SUNDEX-D contains 200,000 IU vitamin D3. Do not take this high-dose softgel daily unless a qualified healthcare professional has expressly prescribed that schedule. Excess vitamin D can be harmful.'
+                : 'Multivitamin and mineral supplements vary in composition. Review the actual pack label, ingredients and cautions, particularly if you take medication or other supplements.'}
+            </p>
+            <a
+              href={product.slug === 'brainaxis-sundex-d'
+                ? 'https://ods.od.nih.gov/factsheets/VitaminD-Consumer/'
+                : 'https://ods.od.nih.gov/factsheets/MVMS-Consumer/'}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex text-sm font-semibold text-[#174D40] underline underline-offset-4 hover:text-[#113A30]"
+            >
+              {product.slug === 'brainaxis-sundex-d'
+                ? 'NIH Office of Dietary Supplements — Vitamin D information'
+                : 'NIH Office of Dietary Supplements — Multivitamins and minerals'}
+            </a>
+            <p className="text-xs text-[#252B29]/65 leading-relaxed">
+              This independent reference explains the nutrient category. It is not an endorsement, product-specific clinical study, or replacement for medical advice.
+            </p>
           </section>
         )}
 
