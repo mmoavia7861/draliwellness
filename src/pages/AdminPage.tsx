@@ -921,27 +921,61 @@ export const AdminPage: React.FC = () => {
         {/* ORDERS */}
         {tab === 'orders' && (
           <div className="space-y-4">
-            <div className="flex flex-wrap gap-3 items-center justify-between">
-              <input
-                type="search"
-                value={orderSearch}
-                onChange={(e) => setOrderSearch(e.target.value)}
-                placeholder="Search order number, customer, city..."
-                className="h-10 px-3.5 rounded-lg border border-[#174D40]/20 bg-white text-sm w-72"
-              />
-              <select
-                value={orderFilter}
-                onChange={(e) => setOrderFilter(e.target.value)}
-                className="h-10 px-3 rounded-lg border border-[#174D40]/20 bg-white text-sm"
-              >
-                <option value="all">All Statuses</option>
-                <option value="placed">Placed</option>
-                <option value="confirmed">Confirmed</option>
-                <option value="processing">Processing</option>
-                <option value="shipped">Shipped</option>
-                <option value="delivered">Delivered</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
+            <div className="bg-white border border-[#174D40]/12 rounded-xl p-4 space-y-3">
+              <div className="flex flex-wrap gap-3 items-end">
+                <label className="flex flex-col gap-1 text-xs font-semibold text-[#174D40] flex-1 min-w-52">
+                  Search orders
+                  <input
+                    type="search"
+                    value={orderSearch}
+                    onChange={(e) => setOrderSearch(e.target.value)}
+                    placeholder="Order no., name, phone, email, city or tracking ID"
+                    className="h-10 px-3 rounded-lg border border-[#174D40]/20 bg-white text-sm font-normal text-[#252B29]"
+                  />
+                </label>
+                <label className="flex flex-col gap-1 text-xs font-semibold text-[#174D40]">
+                  Order status
+                  <select value={orderFilter} onChange={(e) => setOrderFilter(e.target.value)}
+                    className="h-10 px-3 rounded-lg border border-[#174D40]/20 bg-white text-sm font-normal text-[#252B29]">
+                    <option value="all">All Statuses</option>
+                    <option value="placed">Placed</option>
+                    <option value="confirmed">Confirmed</option>
+                    <option value="processing">Processing</option>
+                    <option value="shipped">Shipped</option>
+                    <option value="delivered">Delivered</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                </label>
+                <label className="flex flex-col gap-1 text-xs font-semibold text-[#174D40]">
+                  Date &amp; time order
+                  <select value={orderSort} onChange={(e) => setOrderSort(e.target.value as 'newest' | 'oldest')}
+                    className="h-10 px-3 rounded-lg border border-[#174D40]/20 bg-white text-sm font-normal text-[#252B29]">
+                    <option value="newest">Newest first</option>
+                    <option value="oldest">Oldest first</option>
+                  </select>
+                </label>
+                <label className="flex flex-col gap-1 text-xs font-semibold text-[#174D40]">
+                  From date (PKT)
+                  <input type="date" value={orderFromDate} max={orderToDate || undefined}
+                    onChange={(e) => setOrderFromDate(e.target.value)}
+                    className="h-10 px-3 rounded-lg border border-[#174D40]/20 bg-white text-sm font-normal text-[#252B29]" />
+                </label>
+                <label className="flex flex-col gap-1 text-xs font-semibold text-[#174D40]">
+                  To date (PKT)
+                  <input type="date" value={orderToDate} min={orderFromDate || undefined}
+                    onChange={(e) => setOrderToDate(e.target.value)}
+                    className="h-10 px-3 rounded-lg border border-[#174D40]/20 bg-white text-sm font-normal text-[#252B29]" />
+                </label>
+                <button type="button" onClick={() => {
+                  setOrderSearch(''); setOrderFilter('all'); setOrderSort('newest');
+                  setOrderFromDate(''); setOrderToDate('');
+                }} className="h-10 px-3 rounded-lg border border-[#174D40]/25 text-sm font-semibold text-[#174D40] hover:bg-[#E8F1EB]">
+                  Clear filters
+                </button>
+              </div>
+              <p role="status" className="text-xs text-[#252B29]/70">
+                Showing {filteredOrders.length} of {orders.length} orders, grouped into {groupedOrders.length} date sections. All times shown in Pakistan Standard Time (PKT).
+              </p>
             </div>
 
             {filteredOrders.length === 0 ? (
@@ -949,8 +983,14 @@ export const AdminPage: React.FC = () => {
                 No matching orders found.
               </div>
             ) : (
-              <div className="space-y-4">
-                {filteredOrders.map((ord) => {
+              <div className="space-y-6">
+                {groupedOrders.map((group) => (
+                  <section key={group.date} className="space-y-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-[#E8F1EB] border border-[#174D40]/15 px-4 py-3">
+                      <h3 className="font-semibold text-[#174D40] text-sm">{formatOrderDay(group.date)}</h3>
+                      <span className="text-xs text-[#174D40]">{group.entries.length} order(s)</span>
+                    </div>
+                    {group.entries.map((ord) => {
                   const courier = courierDrafts[ord.id] ?? {
                     courierName: ord.courierName || '',
                     courierTrackingNo: ord.courierTrackingNo || '',
@@ -965,6 +1005,14 @@ export const AdminPage: React.FC = () => {
                           <p className="font-semibold text-[#174D40] tabular-nums">
                             {ord.orderNumber}
                           </p>
+                          <p className="text-xs font-semibold text-[#252B29]/75 tabular-nums">
+                            Ordered: {formatOrderDateTime(ord.createdAt)}
+                          </p>
+                          {ord.updatedAt && (
+                            <p className="text-[11px] text-[#252B29]/60">
+                              Last updated: {formatOrderDateTime(ord.updatedAt)}
+                            </p>
+                          )}
                           <p className="text-[11px] text-[#252B29]/70 font-mono break-all">
                             Customer Tracking ID: {ord.trackingKey}
                           </p>
@@ -1042,6 +1090,46 @@ export const AdminPage: React.FC = () => {
                         </div>
                       </div>
 
+                      {isSuperAdmin && (
+                        <div className="pt-3 border-t border-red-200">
+                          {confirmDeleteId === ord.id ? (
+                            <div className="rounded-lg bg-red-50 border border-red-200 p-4 space-y-3 text-sm">
+                              <p className="font-semibold text-red-800">Permanently delete {ord.orderNumber}?</p>
+                              <p className="text-xs text-red-800/85">
+                                This removes the order, customer order history and tracking records permanently.
+                                It cannot be undone. Retain legally required financial records before deletion.
+                              </p>
+                              <label className="block text-xs font-semibold text-red-800">
+                                Type the exact order number to confirm
+                                <input type="text" autoComplete="off" value={deleteConfirmation}
+                                  onChange={(e) => setDeleteConfirmation(e.target.value)}
+                                  className="block mt-1 w-full max-w-xs h-10 px-3 rounded-lg border border-red-300 bg-white text-[#252B29]"
+                                  placeholder={ord.orderNumber} aria-label={`Confirm deletion of ${ord.orderNumber}`} />
+                              </label>
+                              <div className="flex flex-wrap gap-2">
+                                <button type="button"
+                                  onClick={() => void handleDeleteOrder(ord)}
+                                  disabled={deletingOrderId !== null || deleteConfirmation !== ord.orderNumber}
+                                  className="h-9 px-4 rounded-lg bg-red-700 text-white font-semibold disabled:opacity-40 disabled:cursor-not-allowed">
+                                  {deletingOrderId === ord.id ? 'Deleting...' : 'Permanently delete order'}
+                                </button>
+                                <button type="button" disabled={deletingOrderId !== null}
+                                  onClick={() => { setConfirmDeleteId(null); setDeleteConfirmation(''); }}
+                                  className="h-9 px-4 rounded-lg border border-[#174D40]/20 text-[#174D40]">
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <button type="button"
+                              onClick={() => { setConfirmDeleteId(ord.id); setDeleteConfirmation(''); }}
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 text-red-700 px-3 py-2 text-xs font-semibold hover:bg-red-50">
+                              <Trash2 className="w-3.5 h-3.5" /> Remove order data
+                            </button>
+                          )}
+                        </div>
+                      )}
+
                       {/* Courier Dispatch Tracking Editor */}
                       <div className="pt-2 border-t border-[#174D40]/10 flex flex-wrap items-center gap-2 text-xs">
                         <input
@@ -1086,6 +1174,8 @@ export const AdminPage: React.FC = () => {
                     </div>
                   );
                 })}
+                  </section>
+                ))}
               </div>
             )}
           </div>
