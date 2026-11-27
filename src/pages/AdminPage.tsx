@@ -1008,7 +1008,7 @@ export const AdminPage: React.FC = () => {
                           <p className="text-xs font-semibold text-[#252B29]/75 tabular-nums">
                             Ordered: {formatOrderDateTime(ord.createdAt)}
                           </p>
-                          {ord.updatedAt && (
+                          {Boolean(ord.updatedAt) && (
                             <p className="text-[11px] text-[#252B29]/60">
                               Last updated: {formatOrderDateTime(ord.updatedAt)}
                             </p>
