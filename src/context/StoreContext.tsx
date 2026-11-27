@@ -103,6 +103,7 @@ interface StoreContextValue {
   user: User | null;
   authReady: boolean;
   isAdmin: boolean;
+  isSuperAdmin: boolean;
   adminChecked: boolean;
   signInWithEmail: (email: string, password: string) => Promise<void>;
   registerWithEmail: (email: string, password: string) => Promise<void>;
@@ -171,6 +172,7 @@ interface StoreContextValue {
   deleteCategory: (categoryId: string) => Promise<void>;
   saveSiteSettings: (settings: SiteSettings) => Promise<void>;
   fetchAllOrders: () => Promise<Order[]>;
+  deleteOrder: (order: Order) => Promise<void>;
   updateOrderFulfillment: (
     order: Order,
     updates: {
@@ -221,6 +223,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [user, setUser] = useState<User | null>(null);
   const [authReady, setAuthReady] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [adminChecked, setAdminChecked] = useState(false);
 
   const [products, setProducts] = useState<Product[]>(LAUNCH_PRODUCTS);
@@ -274,11 +277,13 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const unsub = onAuthStateChanged(auth, async (nextUser) => {
       setAdminChecked(false);
       setIsAdmin(false);
+      setIsSuperAdmin(false);
       setUser(nextUser);
       setAuthReady(true);
 
       if (!nextUser) {
         setIsAdmin(false);
+        setIsSuperAdmin(false);
         setAdminChecked(true);
         setUserProfile(null);
         return;
@@ -290,10 +295,12 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           nextUser.email?.toLowerCase() === BOOTSTRAP_ADMIN_EMAIL;
 
         let adminFlag = Boolean(isBootstrapped);
+        let superAdminFlag = Boolean(isBootstrapped);
         if (!adminFlag && nextUser.emailVerified) {
           const adminSnap = await getDoc(doc(db, 'admins', nextUser.uid));
           if (adminSnap.exists() && ['super_admin', 'editor'].includes(adminSnap.data().role)) {
             adminFlag = true;
+            superAdminFlag = adminSnap.data().role === 'super_admin';
           }
         }
         if (isBootstrapped) {
@@ -317,9 +324,11 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         // Ignore stale admin verification if the user changed during an async check.
         if (auth.currentUser?.uid !== nextUser.uid) return;
         setIsAdmin(adminFlag);
+        setIsSuperAdmin(superAdminFlag);
       } catch (err) {
         console.error('Admin verification check error:', err);
         setIsAdmin(false);
+        setIsSuperAdmin(false);
       } finally {
         if (auth.currentUser?.uid === nextUser.uid) setAdminChecked(true);
       }
@@ -1253,6 +1262,48 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, []);
 
+  const deleteOrder = useCallback(async (order: Order): Promise<void> => {
+    const currentUser = auth.currentUser;
+    if (!currentUser || !currentUser.emailVerified) {
+      throw new Error('A verified super-admin login is required to delete an order.');
+    }
+    const owner = currentUser.email?.toLowerCase() === BOOTSTRAP_ADMIN_EMAIL;
+    if (!owner) {
+      const adminSnap = await getDoc(doc(db, 'admins', currentUser.uid));
+      if (!adminSnap.exists() || adminSnap.data().role !== 'super_admin') {
+        throw new Error('Only a super administrator can permanently delete orders.');
+      }
+    }
+    const orderRef = doc(db, 'orders', sanitizeId(order.id));
+    const currentSnap = await getDoc(orderRef);
+    if (!currentSnap.exists()) throw new Error('Order is already removed. Refresh the dashboard.');
+    const stored = currentSnap.data() as Order;
+    if (
+      stored.orderNumber !== order.orderNumber ||
+      stored.trackingKey !== order.trackingKey ||
+      stored.customerEmail !== order.customerEmail
+    ) {
+      throw new Error('Order changed since it was loaded. Refresh before deleting.');
+    }
+
+    // Delete the order AND both customer tracking aliases in one atomic batch.
+    // Do not leave trackable copies of personal order summaries behind.
+    const compatibleKey = await computeTrackingKey(stored.orderNumber, stored.customerEmail);
+    const batch = writeBatch(db);
+    batch.delete(orderRef);
+    batch.delete(doc(db, 'orderTracking', stored.trackingKey));
+    if (compatibleKey !== stored.trackingKey) {
+      batch.delete(doc(db, 'orderTracking', compatibleKey));
+    }
+    try {
+      await batch.commit();
+      await logAudit('DELETE_ORDER', 'orders', order.id,
+        `Permanently deleted order ${stored.orderNumber} and related tracking records`);
+    } catch (err) {
+      handleFirestoreError(err, OperationType.DELETE, `orders/${order.id}`);
+    }
+  }, [logAudit]);
+
   const updateOrderFulfillment = useCallback(
     async (
       order: Order,
@@ -1612,6 +1663,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     user,
     authReady,
     isAdmin,
+    isSuperAdmin,
     adminChecked,
     signInWithEmail,
     registerWithEmail,
@@ -1660,6 +1712,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     deleteCategory,
     saveSiteSettings,
     fetchAllOrders,
+    deleteOrder,
     updateOrderFulfillment,
     fetchAllCoupons,
     saveCoupon,
