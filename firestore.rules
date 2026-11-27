@@ -468,7 +468,8 @@ service cloud.firestore {
             && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt'])
           )
         );
-      allow delete: if false;
+      // Permanent erasure is restricted to a verified super administrator.
+      allow delete: if isValidId(orderId) && isSuperAdmin();
     }
 
     match /orderTracking/{trackingKey} {
@@ -484,7 +485,8 @@ service cloud.firestore {
         && incoming().createdAt == existing().createdAt
         && incoming().updatedAt == request.time
         && isAdmin();
-      allow delete: if false;
+      // Cleanup for an erased order's customer tracking and notification alias.
+      allow delete: if isValidId(trackingKey) && isSuperAdmin();
     }
 
     match /coupons/{couponId} {
