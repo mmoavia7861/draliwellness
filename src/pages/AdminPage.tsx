@@ -36,6 +36,7 @@ import type {
   UserPublicProfile,
 } from '../types';
 import { formatPkr, isProductLive } from '../utils/commerce';
+import { formatOrderDateTime, formatOrderDay, orderDayKey, sortAndFilterOrders } from '../utils/orderAdmin';
 
 type AdminTab =
   | 'overview'
@@ -53,6 +54,7 @@ export const AdminPage: React.FC = () => {
     user,
     authReady,
     isAdmin,
+    isSuperAdmin,
     adminChecked,
     signInWithEmail,
     resetPassword,
@@ -72,6 +74,7 @@ export const AdminPage: React.FC = () => {
     deleteCategory,
     saveSiteSettings,
     fetchAllOrders,
+    deleteOrder,
     updateOrderFulfillment,
     fetchAllCoupons,
     saveCoupon,
@@ -102,6 +105,12 @@ export const AdminPage: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [orderFilter, setOrderFilter] = useState<string>('all');
   const [orderSearch, setOrderSearch] = useState('');
+  const [orderSort, setOrderSort] = useState<'newest' | 'oldest'>('newest');
+  const [orderFromDate, setOrderFromDate] = useState('');
+  const [orderToDate, setOrderToDate] = useState('');
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [deleteConfirmation, setDeleteConfirmation] = useState('');
+  const [deletingOrderId, setDeletingOrderId] = useState<string | null>(null);
   const [courierDrafts, setCourierDrafts] = useState<
     Record<string, { courierName: string; courierTrackingNo: string }>
   >({});
@@ -422,19 +431,38 @@ export const AdminPage: React.FC = () => {
   const lowStockProducts = products.filter((p) => p.stock <= 10);
   const newInquiriesCount = inquiries.filter((i) => i.status === 'new').length;
 
-  const filteredOrders = orders.filter((o) => {
-    if (orderFilter !== 'all' && o.status !== orderFilter) return false;
-    if (orderSearch.trim()) {
-      const q = orderSearch.trim().toLowerCase();
-      return (
-        o.orderNumber.toLowerCase().includes(q) ||
-        o.customerName.toLowerCase().includes(q) ||
-        o.customerEmail.toLowerCase().includes(q) ||
-        o.city.toLowerCase().includes(q)
-      );
-    }
-    return true;
+  const filteredOrders = sortAndFilterOrders(orders, {
+    status: orderFilter,
+    search: orderSearch,
+    from: orderFromDate,
+    to: orderToDate,
+    sort: orderSort,
   });
+  const groupedOrders: { date: string; entries: Order[] }[] = [];
+  for (const order of filteredOrders) {
+    const date = orderDayKey(order.createdAt);
+    const last = groupedOrders[groupedOrders.length - 1];
+    if (last?.date === date) last.entries.push(order);
+    else groupedOrders.push({ date, entries: [order] });
+  }
+
+  const handleDeleteOrder = async (order: Order) => {
+    if (!isSuperAdmin || deleteConfirmation !== order.orderNumber) return;
+    setDeletingOrderId(order.id);
+    setLoadError('');
+    try {
+      await deleteOrder(order);
+      setOrders((previous) => previous.filter((entry) => entry.id !== order.id));
+      setConfirmDeleteId(null);
+      setDeleteConfirmation('');
+      await loadAdminCollections();
+      notify(`Order ${order.orderNumber} permanently deleted with its tracking records.`);
+    } catch (error) {
+      setLoadError(error instanceof Error ? error.message : 'Could not delete the order.');
+    } finally {
+      setDeletingOrderId(null);
+    }
+  };
 
   const resetCategoryForm = () => {
     setEditingCatId(null);
